@@ -127,7 +127,7 @@ class ResourceAdmin(admin.ModelAdmin):
     search_fields = ['title', 'authors__name', 'editors__name', 'url', 'categories__name',
                      'keywords__name', 'publisher', 'subtitle', 'abstract', 'review',
                      'journal', 'series', 'edition', 'sourcetype']
-    list_filter = ['resource_type', 'categories', 'sourcetype']
+    list_filter = ['resource_type', 'categories', 'sourcetype', 'keywords']
     date_hierarchy = 'published'
     filter_horizontal = ['categories']
     fieldsets = (
