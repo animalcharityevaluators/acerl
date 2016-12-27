@@ -84,7 +84,7 @@ class SearchViewSet(viewsets.GenericViewSet):
             lists[key] = [(key_, len(group)) for key_, group in lgroupby(lists[key])]
             lists[key].sort(key=itemgetter(1), reverse=True)  # Sort by frequency
             lists[key] = list(zip(*lists[key]))[0] if lists[key] else []
-        lists['keywords_list'] = lists['keywords_list'][:50]  # Limit length
+        lists['keywords_list'] = lists['keywords_list']
         return lists
 
 
