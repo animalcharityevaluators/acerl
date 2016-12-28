@@ -5,7 +5,6 @@ web browser for an overview of the available endpoints.
 """
 import datetime
 from collections import defaultdict
-from operator import itemgetter
 
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
@@ -82,9 +81,9 @@ class SearchViewSet(viewsets.GenericViewSet):
             # Sort attributes by their frequency
             lists[key].sort()  # Necessary for groupby and lgroupby
             lists[key] = [(key_, len(group)) for key_, group in lgroupby(lists[key])]
-            lists[key].sort(key=itemgetter(1), reverse=True)  # Sort by frequency
+            lists[key].sort(  # Sort alphabetically
+                key=lambda tup: tup[0].lower() if isinstance(tup[0], str) else tup[0])
             lists[key] = list(zip(*lists[key]))[0] if lists[key] else []
-        lists['keywords_list'] = lists['keywords_list']
         return lists
 
 
