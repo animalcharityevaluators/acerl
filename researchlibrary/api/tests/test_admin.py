@@ -11,11 +11,9 @@ settings.HAYSTACK_CONNECTIONS['default']['PATH'] = \
     os.path.join(settings.BASE_DIR, '..', 'test_whoosh_index')
 
 
-class SearchTests(TestCase):
+class AdminTests(TestCase):
     """
-    Basic tests for the list endpoint.
-
-    # TODO: Extend according to https://trello.com/c/fAUsohvO/2-interface-prototype
+    Tests for the admin.
     """
     endpoint_url = '/admin/'
 
