@@ -2,15 +2,11 @@ import requests
 from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.db.models import Count
-from django.forms import ModelForm
-from django.http import JsonResponse
 from django.core.urlresolvers import reverse
 from django.utils.html import format_html
 from django.conf.urls import url
-from django.views.decorators.csrf import csrf_exempt
 from ..models import Person, Category, Keyword, Resource
 from .utils import Gist
-from .widgets import PersonModelSelect2TagWidget, KeywordModelSelect2TagWidget
 
 
 class UsageCountListFilter(admin.SimpleListFilter):
@@ -106,21 +102,8 @@ class PersonAdmin(admin.ModelAdmin):
     usage_count_as_editor.admin_order_field = 'edi_count'
 
 
-class ResourceAdminForm(ModelForm):
-
-    class Meta:
-        model = Resource
-        exclude = []
-        widgets = {
-            'authors': PersonModelSelect2TagWidget(),
-            'editors': PersonModelSelect2TagWidget(),
-            'keywords': KeywordModelSelect2TagWidget(),
-        }
-
-
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
-    form = ResourceAdminForm
     change_list_template = 'api/change_list.html'
     change_form_template = 'api/change_form.html'
     list_display = ['augmented_title', 'concatenated_authors', 'published', 'resource_type']
@@ -129,7 +112,7 @@ class ResourceAdmin(admin.ModelAdmin):
                      'journal', 'series', 'edition', 'sourcetype']
     list_filter = ['resource_type', 'categories', 'sourcetype', 'keywords']
     date_hierarchy = 'published'
-    filter_horizontal = ['categories']
+    filter_horizontal = ['authors', 'editors', 'keywords', 'categories']
     fieldsets = (
         ('Main Fields', {
             'fields': ('title', 'subtitle', 'authors', 'editors', 'published', 'accessed', 'url',
@@ -150,7 +133,6 @@ class ResourceAdmin(admin.ModelAdmin):
         super().__init__(*args, **kwargs)
         self.fulltext = None
         self.title = None
-        self.keywords = None
 
     def augmented_title(self, obj):
         return format_html(
@@ -170,8 +152,6 @@ class ResourceAdmin(admin.ModelAdmin):
         urls = super(ResourceAdmin, self).get_urls()
         new_urls = [
             url(r'^add_url/$', self.add_url, name='api_resource_add_url'),
-            url(r'^create_person/$', self.create_person, name='api_resource_create_person'),
-            url(r'^create_keyword/$', self.create_keyword, name='api_resource_create_keyword'),
         ]
         return new_urls + urls
 
@@ -197,8 +177,8 @@ class ResourceAdmin(admin.ModelAdmin):
     def add_url(self, request, form_url='', extra_context=None):
         if request.method == 'POST' and not (self.fulltext or self.title):
             extra_context = extra_context or {}
-            url = request.POST['url']
-            response = requests.get(url, timeout=10)
+            url_ = request.POST['url']
+            response = requests.get(url_, timeout=10)
             gist = Gist(html=response.text)
             request.title = gist.title
             request.fulltext = gist.text
@@ -211,40 +191,9 @@ class ResourceAdmin(admin.ModelAdmin):
         return URLResourceAdmin(model=self.model, admin_site=self.admin_site) \
             .add_view(request, form_url, extra_context=extra_context)
 
-    @csrf_exempt
-    def create_person(self, request):
-        """
-        Create a person.
-
-        Little wrapper to circumvent all the security stuff.
-        https://docs.djangoproject.com/en/1.9/ref/csrf/#ajax
-
-        TODO: Don’t circumvent all the security stuff.
-        """
-        name = request.POST['name'].strip()
-        person, created = Person.objects.get_or_create(name=name)
-        return JsonResponse({'id': person.pk, 'text': person.name})
-
-    @csrf_exempt
-    def create_keyword(self, request):
-        """
-        Create a keyword.
-
-        Little wrapper to circumvent all the security stuff.
-        https://docs.djangoproject.com/en/1.9/ref/csrf/#ajax
-
-        TODO: Don’t circumvent all the security stuff.
-        """
-        name = request.POST['name'].strip()
-        keyword, created = Keyword.objects.get_or_create(name=name)
-        return JsonResponse({'id': keyword.pk, 'text': keyword.name})
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.base_fields['authors'].widget.can_add_related = False
-        form.base_fields['editors'].widget.can_add_related = False
-        form.base_fields['keywords'].widget.can_add_related = False
-        return form
+    def has_add_permission(self, request):
+        """Make the plus button show up. Why is this necessary?"""
+        return True
 
 
 class URLResourceAdmin(admin.ModelAdmin):

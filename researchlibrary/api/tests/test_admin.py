@@ -1,5 +1,6 @@
 import datetime
 import os
+from unittest import skip
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.conf import settings
@@ -168,6 +169,7 @@ class AdminTests(TestCase):
         self.assertEqual(response.status_code, 302, response)
         self.assertEqual(response.url, '/admin/api/resource/', response)
 
+    @skip(reason='currently deactivated')
     def test_create_keyword_hack(self):
         response = self.client.post(
             self.endpoint_url + 'api/resource/create_keyword/',
@@ -177,6 +179,7 @@ class AdminTests(TestCase):
         self.assertEqual(response.json()['text'], 'attribution', response)
         self.assertTrue(Keyword.objects.get(pk=response.json()['id']), response)
 
+    @skip(reason='currently deactivated')
     def test_create_person_hack(self):
         response = self.client.post(
             self.endpoint_url + 'api/resource/create_person/',
