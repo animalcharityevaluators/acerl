@@ -55,6 +55,9 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_author(self, obj):
         return (' '.join([a.name for a in obj.authors.all() | obj.editors.all()]))
 
+    def prepare_resource_type(self, obj):
+        return obj.get_resource_type_display()
+
 
 class PersonIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=False)
