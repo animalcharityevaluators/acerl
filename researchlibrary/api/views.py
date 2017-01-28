@@ -78,12 +78,9 @@ class SearchViewSet(viewsets.GenericViewSet):
             lists['resource_type_list'].append(hit.resource_type)
             lists['published_list'].append(hit.published.year)
         for key in lists.keys():
-            # Sort attributes by their frequency
-            lists[key].sort()  # Necessary for groupby and lgroupby
-            lists[key] = [(key_, len(group)) for key_, group in lgroupby(lists[key])]
-            lists[key].sort(  # Sort alphabetically
-                key=lambda tup: tup[0].lower() if isinstance(tup[0], str) else tup[0])
-            lists[key] = list(zip(*lists[key]))[0] if lists[key] else []
+            lists[key] = list(filter(bool, set(lists[key])))  # Make unique and nonempty
+            lists[key].sort(  # Sort alphabetically ignoring case
+                key=lambda value: value.lower() if hasattr(value, 'lower') else value)
         return lists
 
 
