@@ -53,7 +53,7 @@ class ModelSelect2TagWidgetBase(ModelSelect2TagWidget):
                 select.data('entries', %s);
                 select.select2({
                     tags: true,
-                    // selectOnClose: true,  // Too much recursion error
+                    selectOnClose: true,  // Too much recursion error
                     data: select.data('entries')
                 });
                 select.on('select2:select', register);

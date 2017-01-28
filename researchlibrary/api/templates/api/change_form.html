@@ -53,6 +53,7 @@
         }
 
         function register(event) {
+            console.log('Select event:', event);
             if (typeof event.params !== 'undefined' &&
                     event.params.data.text == event.params.data.id) {
                 addOption(event.target, event.params.data.text, function (select) {
