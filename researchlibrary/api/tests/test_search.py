@@ -3,7 +3,7 @@ import os
 from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
-from ..models import Person, Resource
+from ..models import Category, Person, Resource
 
 
 settings.HAYSTACK_CONNECTIONS['default']['PATH'] = \
@@ -22,13 +22,17 @@ class SearchTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         author = Person.objects.create(name='Mock Author')
+        category = Category.objects.create(name='Mock Category')
         Resource.objects.create(title='Mock Turtle', published=datetime.date.today())
         Resource.objects.create(title='Mock Chicken', published=datetime.date.today())
         Resource.objects.create(title='Mock Cow', published=datetime.date.today())
         Resource.objects.create(title='Mock Pig', published=datetime.date.today())
         Resource.objects.create(title='Mock Piglet', published=datetime.date.today())
         Resource.objects.create(title='Mock Turkey', published=datetime.date(1994, 10, 19))
-        author.resources_authored.add(*Resource.objects.all())
+        resources = list(Resource.objects.all())
+        author.resources_authored.add(*resources)
+        category.resources.add(*resources[:5])
+        resources[5].categories.add(category)
 
     @classmethod
     def tearDownClass(cls):
@@ -80,3 +84,7 @@ class SearchTests(TestCase):
     def test_text(self):
         response = self.client.get(self.endpoint_url + '?q=mock')
         self.assertIsInstance(response.json()['results'][0]['abstract'], str)
+
+    def test_category_filter(self):
+        response = self.client.get(self.endpoint_url + '?category=Mock%20Category')
+        self.assertEqual(response.json()['count'], 6)

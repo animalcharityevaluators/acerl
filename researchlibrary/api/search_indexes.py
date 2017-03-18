@@ -31,7 +31,7 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
     subtitle = indexes.CharField(model_attr='subtitle')
     title_auto = indexes.EdgeNgramField(model_attr='title')
     subtitle_auto = indexes.EdgeNgramField(model_attr='subtitle')
-    #A search with the 'author:'-tag will look through this field:
+    # A search with the author: prefix will search this field:
     author = indexes.CharField(indexed=True, stored=True)
 
     def get_model(self):

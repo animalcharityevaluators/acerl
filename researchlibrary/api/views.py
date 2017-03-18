@@ -9,7 +9,6 @@ from collections import defaultdict
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
 from rest_framework import viewsets
-from utilofies.stdlib import lgroupby
 
 from .models import Resource, Keyword, Person
 from .serializers import (ResourceSerializer, SearchSerializer,

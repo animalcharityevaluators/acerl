@@ -12,7 +12,7 @@ from .utils import Gist
 class UsageCountListFilter(admin.SimpleListFilter):
     title = 'Usage count'
     parameter_name = 'usage_count'
-    count_field = 'resource__id'
+    count_field = 'resources__id'
 
     def lookups(self, request, model_admin):
         return (
@@ -55,10 +55,10 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
     def get_queryset(self, request):
-        return Category.objects.annotate(cat_count=Count('resource'))
+        return Category.objects.annotate(cat_count=Count('resources'))
 
     def usage_count(self, obj):
-        return obj.resource_set.count()
+        return obj.resources.count()
     usage_count.short_description = 'Usage Count'
     usage_count.admin_order_field = 'cat_count'
 
@@ -70,7 +70,7 @@ class KeywordAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
     def get_queryset(self, request):
-        return Keyword.objects.annotate(kw_count=Count('resource'))
+        return Keyword.objects.annotate(kw_count=Count('resources'))
 
     def usage_count(self, obj):
         return obj.kw_count

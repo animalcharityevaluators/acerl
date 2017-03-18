@@ -33,7 +33,7 @@ class SignalProcessor(BaseSignalProcessor):
         Given an individual model instance, determine which backends the
         update should be sent to & update the object on those backends.
         """
-        logger.debug('Handle save sent by %r for %s', sender, instance)
+        logger.debug('Handle save sent by %r for %s – %s', sender, instance, kwargs)
         using_backends = self.connection_router.for_write(instance=instance)
         for using in using_backends:
             index = self.connections[using].get_unified_index().get_index(sender)
@@ -44,7 +44,7 @@ class SignalProcessor(BaseSignalProcessor):
         Given an individual model instance, determine which backends the
         delete should be sent to & delete the object on those backends.
         """
-        logger.debug('Handle delete sent by %r for %s', sender, instance)
+        logger.debug('Handle delete sent by %r for %s – %s', sender, instance, kwargs)
         using_backends = self.connection_router.for_write(instance=instance)
         for using in using_backends:
             index = self.connections[using].get_unified_index().get_index(sender)
@@ -56,7 +56,7 @@ class SignalProcessor(BaseSignalProcessor):
         update should be sent to & update the object on those backends.
         """
         using_backends = self.connection_router.for_write(instance=instance)
-        logger.debug('Handle related sent by %r for %s', sender, instance)
+        logger.debug('Handle related sent by %r for %s – %s', sender, instance, kwargs)
         for using in using_backends:
             unified_index = self.connections[using].get_unified_index()
             if sender == Resource:
@@ -70,12 +70,13 @@ class SignalProcessor(BaseSignalProcessor):
                     index.update_object(obj, using=using)
             else:
                 index = unified_index.get_index(Resource)
-                objects = instance.resource_set.all()
+                objects = instance.resources.all()
                 for obj in objects:
                     index.update_object(obj, using=using)
 
-    def handle_m2m(self, sender, instance, action, reverse, model, **kwargs):
-        logger.debug('Handle m2m sent by %r for %s with %s on %s (%s)', sender, instance, action, model, reverse)
+    def handle_m2m(self, sender, instance, action, reverse, model, pk_set, **kwargs):
+        logger.debug('Handle m2m sent by %r for %s with %s on %s (%s) updating %s – %s',
+                     sender, instance, action, model, reverse, pk_set, kwargs)
         if action.startswith('post_') and Resource in (instance._meta.model, model):
             if instance._meta.model == Resource:
                 self.handle_save(instance._meta.model, instance)
