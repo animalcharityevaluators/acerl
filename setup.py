@@ -46,6 +46,7 @@ setup(
         'stop-words',
         'utilofies',
         'Whoosh',
+        'django-cors-headers',
     ],
     zip_safe=False,
     entry_points={
