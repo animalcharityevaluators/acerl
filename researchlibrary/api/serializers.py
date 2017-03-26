@@ -5,11 +5,37 @@ for the conversion of query sets and search results to JSON.
 """
 
 import datetime
-from .models import Resource
+from collections import OrderedDict
+
 from rest_framework import serializers
+from rest_framework.fields import SkipField
+
+from .models import Resource
 
 
-class ResourceSerializer(serializers.HyperlinkedModelSerializer):
+class NonNullSerializer(serializers.HyperlinkedModelSerializer):
+
+    def to_representation(self, instance):
+        """
+        Object instance -> Dict of primitive datatypes.
+        """
+        ret = OrderedDict()
+        fields = [field for field in self.fields.values() if not field.write_only]
+        for field in fields:
+            try:
+                attribute = field.get_attribute(instance)
+            except SkipField:
+                continue
+            if attribute is not None:
+                represenation = field.to_representation(attribute)
+                if represenation in (None, '', []):
+                    # Do not seralize empty objects
+                    continue
+                ret[field.field_name] = represenation
+        return ret
+
+
+class ResourceSerializer(NonNullSerializer):
     """
     Serializer for the Resource model.
     """
@@ -20,10 +46,11 @@ class ResourceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Resource
         fields = ('authors', 'editors',  'title', 'subtitle', 'abstract', 'publisher', 'journal',
-                  'published', 'accessed', 'volume', 'number', 'pages', 'series', 'edition', 'url')
+                  'published', 'accessed', 'volume', 'number', 'pages', 'series', 'edition', 'url',
+                  'fulltext_url')
 
 
-class SearchSerializer(serializers.HyperlinkedModelSerializer):
+class SearchSerializer(NonNullSerializer):
     """
     Serializer for search results.
     """
@@ -49,7 +76,7 @@ class SearchSerializer(serializers.HyperlinkedModelSerializer):
         model = Resource
         fields = ('authors', 'editors',  'title', 'subtitle', 'abstract', 'publisher', 'journal',
                   'published', 'volume', 'number', 'pages', 'series', 'edition', 'url',
-                  'resource_type', 'categories', 'excerpt', 'review')
+                  'fulltext_url', 'resource_type', 'categories', 'excerpt', 'review')
 
 
 class SuggestSerializer(serializers.Serializer):

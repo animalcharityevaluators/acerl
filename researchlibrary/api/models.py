@@ -97,7 +97,10 @@ class Resource(models.Model):
         return self.title
 
     def pages(self):
-        return str(self.startpage) + ' - ' + str(self.endpage)
+        if self.startpage and self.endpage:
+            return '{}–{}'.format(self.startpage, self.endpage)
+        elif self.startpage or self.endpage:
+            return str(self.startpage or self.endpage)
 
     def get_absolute_url(self):
         return '/resources/%i/' % self.id

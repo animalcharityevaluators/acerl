@@ -107,8 +107,7 @@ class ResourceAdmin(admin.ModelAdmin):
     change_list_template = 'api/change_list.html'
     change_form_template = 'api/change_form.html'
     list_display = ['augmented_title', 'concatenated_authors', 'published', 'resource_type']
-    search_fields = ['title', 'authors__name', 'editors__name', 'url', 'categories__name',
-                     'keywords__name', 'publisher', 'subtitle', 'abstract', 'review',
+    search_fields = ['title', 'authors__name', 'editors__name', 'url', 'publisher', 'subtitle',
                      'journal', 'series', 'edition', 'sourcetype']
     list_filter = ['resource_type', 'categories', 'sourcetype', 'keywords']
     date_hierarchy = 'published'
