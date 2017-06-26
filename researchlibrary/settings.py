@@ -100,7 +100,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'rlibdb',
         'USER': 'acerl',
-#        'PASSWORD': 'password',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '',
     }
