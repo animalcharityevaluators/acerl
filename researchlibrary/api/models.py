@@ -5,6 +5,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from .models_choices import SOURCETYPE_CHOICES, RESOURCE_TYPE_CHOICES
 from mptt.models import MPTTModel, TreeForeignKey
+from mptt.fields import TreeManyToManyField
 
 
 class Person(models.Model):
@@ -87,7 +88,7 @@ class Resource(models.Model):
     url = models.URLField(max_length=2000, blank=True, verbose_name='URL')
     fulltext_url = models.URLField(max_length=2000, blank=True, verbose_name='fulltext URL')
     categories = models.ManyToManyField(Category, related_name='resources', blank=True)
-    newcategories = models.ManyToManyField(NewCategory, related_name='resources', blank=True)
+    newcategories = TreeManyToManyField(NewCategory, related_name='resources', blank=True)
     keywords = models.ManyToManyField(Keyword, related_name='resources', blank=True)
     editors = models.ManyToManyField(Person, related_name='resources_edited', blank=True)
     publisher = models.CharField(max_length=300, blank=True)
@@ -127,5 +128,6 @@ class Resource(models.Model):
     class Meta:
         ordering = ['-published', 'title']
         get_latest_by = 'published'
+
 Resource.authors.through.person.field.remote_field.on_delete = models.PROTECT
 Resource.editors.through.person.field.remote_field.on_delete = models.PROTECT

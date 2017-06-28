@@ -8,6 +8,7 @@ from django.conf.urls import url
 from ..models import Person, Category, NewCategory, Keyword, Resource
 from .utils import Gist
 from mptt.admin import DraggableMPTTAdmin
+from django.forms import ModelForm
 
 class UsageCountListFilter(admin.SimpleListFilter):
     title = 'Usage count'
@@ -111,9 +112,19 @@ class PersonAdmin(admin.ModelAdmin):
     usage_count_as_editor.short_description = 'Usage Count as editor'
     usage_count_as_editor.admin_order_field = 'edi_count'
 
+class ResourceForm(ModelForm):
+    class Meta:
+        model = Resource
+        fields = ['newcategories']
+
+    def __init__(self, *args, **kwargs):
+        super(ResourceForm, self).__init__(*args, **kwargs)
+        self.fields['newcategories'].queryset = NewCategory.objects.filter(children__isnull=True)
+
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
+    form = ResourceForm
     change_list_template = 'api/change_list.html'
     change_form_template = 'api/change_form.html'
     list_display = ['augmented_title', 'concatenated_authors', 'published', 'resource_type']
