@@ -5,9 +5,9 @@ from django.db.models import Count
 from django.core.urlresolvers import reverse
 from django.utils.html import format_html
 from django.conf.urls import url
-from ..models import Person, Category, Keyword, Resource
+from ..models import Person, Category, NewCategory, Keyword, Resource
 from .utils import Gist
-
+from mptt.admin import DraggableMPTTAdmin
 
 class UsageCountListFilter(admin.SimpleListFilter):
     title = 'Usage count'
@@ -46,8 +46,6 @@ class EditorUsageCountListFilter(UsageCountListFilter):
     parameter_name = 'usage_count_as_editor'
     count_field = 'resources_edited__id'
 
-
-
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'usage_count']
@@ -61,6 +59,18 @@ class CategoryAdmin(admin.ModelAdmin):
         return obj.resources.count()
     usage_count.short_description = 'Usage Count'
     usage_count.admin_order_field = 'cat_count'
+
+admin.site.register(
+    NewCategory,
+    DraggableMPTTAdmin,
+    list_display=(
+        'tree_actions',
+        'indented_title',
+    ),
+    list_display_links=(
+        'indented_title',
+    ),
+)
 
 
 @admin.register(Keyword)
@@ -109,17 +119,17 @@ class ResourceAdmin(admin.ModelAdmin):
     list_display = ['augmented_title', 'concatenated_authors', 'published', 'resource_type']
     search_fields = ['title', 'authors__name', 'editors__name', 'url', 'publisher', 'subtitle',
                      'journal', 'series', 'edition', 'sourcetype']
-    list_filter = ['resource_type', 'categories', 'sourcetype', 'keywords']
+    list_filter = ['resource_type', 'categories', 'newcategories', 'sourcetype', 'keywords']
     date_hierarchy = 'published'
-    filter_horizontal = ['authors', 'editors', 'keywords', 'categories']
+    filter_horizontal = ['authors', 'editors', 'keywords', 'categories', 'newcategories']
     fieldsets = (
         ('Main Fields', {
             'fields': ('title', 'subtitle', 'authors', 'editors', 'published', 'accessed', 'url',
-                       'fulltext_url', 'resource_type')
+                       'fulltext_url', 'resource_type', 'categories', 'newcategories')
         }),
         ('Auxilliary Fields', {
             'classes': ('collapse',),
-            'fields': ('categories', 'keywords', 'abstract', 'review'),
+            'fields': ('keywords', 'abstract', 'review'),
         }),
         ('Optional Fields', {
             'classes': ('collapse',),

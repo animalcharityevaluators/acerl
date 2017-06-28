@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_select2',
     'corsheaders',
+    'mptt'
 ]
 
 HAYSTACK_CONNECTIONS = {

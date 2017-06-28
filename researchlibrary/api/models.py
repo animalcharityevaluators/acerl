@@ -4,6 +4,7 @@ import datetime
 from django.db import models
 from django.core.exceptions import ValidationError
 from .models_choices import SOURCETYPE_CHOICES, RESOURCE_TYPE_CHOICES
+from mptt.models import MPTTModel, TreeForeignKey
 
 
 class Person(models.Model):
@@ -34,8 +35,25 @@ class Category(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = 'categories'
+        verbose_name = 'category (old)'
+        verbose_name_plural = 'categories (old)'
 
+class NewCategory(MPTTModel):
+    """
+    The category of a resource, using mptt for tree management
+    """
+    name = models.CharField(max_length=50, unique=True)
+    parent = TreeForeignKey(
+        'self',
+        null=True, blank=True,
+        related_name='children', db_index=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'category'
+        verbose_name_plural = 'categories'
 
 class Keyword(models.Model):
     """
@@ -69,6 +87,7 @@ class Resource(models.Model):
     url = models.URLField(max_length=2000, blank=True, verbose_name='URL')
     fulltext_url = models.URLField(max_length=2000, blank=True, verbose_name='fulltext URL')
     categories = models.ManyToManyField(Category, related_name='resources', blank=True)
+    newcategories = models.ManyToManyField(NewCategory, related_name='resources', blank=True)
     keywords = models.ManyToManyField(Keyword, related_name='resources', blank=True)
     editors = models.ManyToManyField(Person, related_name='resources_edited', blank=True)
     publisher = models.CharField(max_length=300, blank=True)
