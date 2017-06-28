@@ -36,6 +36,7 @@ setup(
         'django_compressor',
         'django_select2',
         'djangorestframework',
+        'django-mptt',
         'gspread',
         'markdown',  # Optional addition to Django REST Framework
         'oauth2client',  # For GSpread
