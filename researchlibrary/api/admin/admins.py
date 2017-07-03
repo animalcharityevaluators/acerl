@@ -61,17 +61,19 @@ class CategoryAdmin(admin.ModelAdmin):
     usage_count.short_description = 'Usage Count'
     usage_count.admin_order_field = 'cat_count'
 
-admin.site.register(
-    NewCategory,
-    DraggableMPTTAdmin,
-    list_display=(
-        'tree_actions',
-        'indented_title',
-    ),
-    list_display_links=(
-        'indented_title',
-    ),
-)
+@admin.register(NewCategory)
+class NewCategoryAdmin(DraggableMPTTAdmin):
+    list_display = ('tree_actions', 'indented_title', 'usage_count')
+    list_display_links = ('indented_title',)
+
+    def get_queryset(self, request):
+            return NewCategory.objects.annotate(cat_count=Count('resources'))
+
+    def usage_count(self, obj):
+        return obj.resources.count()
+
+    usage_count.short_description = 'Usage Count'
+    usage_count.admin_order_field = 'cat_count'
 
 
 @admin.register(Keyword)
@@ -112,6 +114,7 @@ class PersonAdmin(admin.ModelAdmin):
     usage_count_as_editor.short_description = 'Usage Count as editor'
     usage_count_as_editor.admin_order_field = 'edi_count'
 
+
 class ResourceForm(ModelForm):
     class Meta:
         model = Resource
@@ -119,7 +122,11 @@ class ResourceForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ResourceForm, self).__init__(*args, **kwargs)
-        self.fields['newcategories'].queryset = NewCategory.objects.filter(children__isnull=True)
+        new_category_element = NewCategory.objects.first()
+        if new_category_element is not None:
+            self.fields['newcategories'].queryset = \
+                new_category_element.get_leafnodes()
+
 
 
 @admin.register(Resource)
