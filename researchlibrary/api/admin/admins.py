@@ -70,7 +70,7 @@ class NewCategoryAdmin(DraggableMPTTAdmin):
             return NewCategory.objects.annotate(cat_count=Count('resources'))
 
     def usage_count(self, obj):
-        return obj.resources.count()
+        return obj.resources.count() if obj.is_leaf_node() else None
 
     usage_count.short_description = 'Usage Count'
     usage_count.admin_order_field = 'cat_count'
