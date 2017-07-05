@@ -25,6 +25,7 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
     fulltext_url = indexes.CharField(model_attr='fulltext_url', null=True)
     resource_type = indexes.CharField(model_attr='resource_type', null=True)
     categories = indexes.MultiValueField(indexed=True, stored=True)
+    newcategories = indexes.MultiValueField(indexed=True, stored=True)
     authors = indexes.MultiValueField(indexed=True, stored=True)
     editors = indexes.MultiValueField(indexed=True, stored=True)
     keywords = indexes.MultiValueField(indexed=True, stored=True)
@@ -43,6 +44,9 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare_categories(self, obj):
         return [c for c in obj.categories.all()]
+
+    def prepare_newcategories(self, obj):
+        return [c for c in obj.newcategories.all()]
 
     def prepare_authors(self, obj):
         return [a for a in obj.authors.all()]

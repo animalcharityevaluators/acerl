@@ -58,6 +58,7 @@ class SearchSerializer(NonNullSerializer):
     authors = serializers.StringRelatedField(many=True)
     editors = serializers.StringRelatedField(many=True)
     categories = serializers.StringRelatedField(many=True)
+    newcategories = serializers.StringRelatedField(many=True)
     excerpt = serializers.SerializerMethodField('fetch_excerpt')
 
     def __init__(self, instance=None, data=serializers.empty, **kwargs):
@@ -76,7 +77,7 @@ class SearchSerializer(NonNullSerializer):
         model = Resource
         fields = ('authors', 'editors',  'title', 'subtitle', 'abstract', 'publisher', 'journal',
                   'published', 'volume', 'number', 'pages', 'series', 'edition', 'url',
-                  'fulltext_url', 'resource_type', 'categories', 'excerpt', 'review')
+                  'fulltext_url', 'resource_type', 'categories', 'newcategories', 'excerpt', 'review')
 
 
 class SuggestSerializer(serializers.Serializer):
