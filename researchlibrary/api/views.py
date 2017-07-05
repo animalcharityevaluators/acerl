@@ -10,10 +10,9 @@ from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
 from rest_framework import viewsets
 
-from .models import Resource, Keyword, Person
+from .models import Resource, Keyword, Person, NewCategory
 from .serializers import (ResourceSerializer, SearchSerializer,
                           SuggestSerializer)
-
 
 class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -72,7 +71,6 @@ class SearchViewSet(viewsets.GenericViewSet):
         lists = defaultdict(list)
         for hit in queryset:
             # Linearize all attributes including all duplicates
-            lists['categories_list'].extend(hit.categories)
             lists['keywords_list'].extend(hit.keywords)
             lists['resource_type_list'].append(hit.resource_type)
             lists['published_list'].append(hit.published.year)
@@ -80,7 +78,26 @@ class SearchViewSet(viewsets.GenericViewSet):
             lists[key] = list(filter(bool, set(lists[key])))  # Make unique and nonempty
             lists[key].sort(  # Sort alphabetically ignoring case
                 key=lambda value: value.lower() if hasattr(value, 'lower') else value)
+        roots = NewCategory.objects.filter(level=0)
+        lists['categories_list'] = [self.get_categories_list(root, queryset) for root in roots]
         return lists
+
+    def get_categories_list(self, category, resource_queryset):
+        if category.is_leaf_node():
+            return {
+                "name": category.name,
+                "children": [],
+                "resource_count": len(resource_queryset.filter(categories__in=[category.name]))
+            }
+        else:
+            children = [self.get_categories_list(child, resource_queryset)
+                for child in category.get_children()]
+            resource_count = sum([child['resource_count'] for child in children])
+            return {
+                "name": category.name,
+                "children": children,
+                "resource_count": resource_count
+            }
 
 
 class SuggestViewSet(viewsets.GenericViewSet):
