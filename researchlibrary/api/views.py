@@ -87,7 +87,7 @@ class SearchViewSet(viewsets.GenericViewSet):
             return {
                 "name": category.name,
                 "children": [],
-                "resource_count": len(resource_queryset.filter(newcategories__in=[category.name])),
+                "resource_count": len([0 for r in resource_queryset if category.name in r.newcategories])
             }
         else:
             children = [self.get_categories_list(child, resource_queryset)
