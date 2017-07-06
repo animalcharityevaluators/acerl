@@ -57,7 +57,7 @@ class SearchViewSet(viewsets.GenericViewSet):
         sorting = request.GET.get('sort', '')
         queryset = self.queryset.filter(content=Raw(query)).models(Resource).highlight()
         if category_filters:
-            queryset = queryset.filter(categories__in=category_filters)
+            queryset = queryset.filter(newcategories__in=category_filters)
         if keyword_filters:
             queryset = queryset.filter(keywords__in=keyword_filters)
         if resource_type_filters:
@@ -88,6 +88,7 @@ class SearchViewSet(viewsets.GenericViewSet):
                 "name": category.name,
                 "children": [],
                 "resource_count": len([0 for r in resource_queryset if category.name in r.newcategories])
+                # should perhaps use a SearchQuerySet, but this caused problems
             }
         else:
             children = [self.get_categories_list(child, resource_queryset)
