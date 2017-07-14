@@ -39,7 +39,6 @@ RESOURCE_TYPE_CHOICES = (
     (WORKING_PAPER, 'Working paper'),
     (RESEARCH_SUMMARY, 'Literature review'),
     (METASTUDY, 'Meta-analysis'),
-    (SYSTEMATIC_REVIEW, 'Systematic review'),
     (OPINION_PIECE, 'Opinion piece'),
     (HISTORICAL_DOCUMENT, 'Historical document'),
     (ENCYCLOPEDIA_ARTICLE, 'Encyclopedia entry'),
