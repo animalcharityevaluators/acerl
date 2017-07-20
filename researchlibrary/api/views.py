@@ -37,27 +37,30 @@ class SearchViewSet(viewsets.GenericViewSet):
         Return a paginated list of search hits filtered according to
         user-selected criteria.
         """
-        queryset = self._filtered_queryset(request)
+
+        # This is found separately so that the counts per category are computed properly
+        queryset_no_categories = self._filtered_queryset_no_categories(request)
+
+        queryset = self._filtered_queryset(request, queryset_no_categories)
         page = self.paginate_queryset(queryset)
         serializer = SearchSerializer(page, many=True, context={'request': request})
         response = self.get_paginated_response(serializer.data)
-        sets = self._get_attribute_sets(queryset)
+        sets = self._get_attribute_sets(queryset, queryset_no_categories)
         response.data.update(sets)
         return response
 
-    def _filtered_queryset(self, request):
+
+    def _filtered_queryset_no_categories(self, request):
         query = request.GET.get('q', 'magick')  # Getting all resources unfiltered takes about 3 s;
                                                 # getting all resources filtered by a word that’s
                                                 # contained in every one of them less than 0.1 s.
-        category_filters = request.GET.getlist('category')
         keyword_filters = request.GET.getlist('keyword')
         resource_type_filters = request.GET.getlist('type')
         min_year_filter = request.GET.get('minyear', 1000)
         max_year_filter = request.GET.get('maxyear', datetime.MAXYEAR)
         sorting = request.GET.get('sort', '')
         queryset = self.queryset.filter(content=Raw(query)).models(Resource).highlight()
-        if category_filters:
-            queryset = queryset.filter(newcategories__in=category_filters)
+
         if keyword_filters:
             queryset = queryset.filter(keywords__in=keyword_filters)
         if resource_type_filters:
@@ -67,7 +70,13 @@ class SearchViewSet(viewsets.GenericViewSet):
             queryset = queryset.order_by(sorting)
         return queryset
 
-    def _get_attribute_sets(self, queryset):
+    def _filtered_queryset(self, request, queryset):
+        category_filters = request.GET.getlist('category')
+        if category_filters:
+            queryset = queryset.filter(newcategories__in=category_filters)
+        return queryset
+
+    def _get_attribute_sets(self, queryset, queryset_no_categories):
         lists = defaultdict(list)
         for hit in queryset:
             # Linearize all attributes including all duplicates
@@ -79,7 +88,7 @@ class SearchViewSet(viewsets.GenericViewSet):
             lists[key].sort(  # Sort alphabetically ignoring case
                 key=lambda value: value.lower() if hasattr(value, 'lower') else value)
         roots = NewCategory.objects.filter(level=0)
-        lists['categories_list'] = [self.get_categories_list(root, queryset) for root in roots]
+        lists['categories_list'] = [self.get_categories_list(root, queryset_no_categories) for root in roots]
         return lists
 
     def get_categories_list(self, category, resource_queryset):
