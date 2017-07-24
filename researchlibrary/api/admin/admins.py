@@ -5,6 +5,7 @@ from django.db.models import Count
 from django.core.urlresolvers import reverse
 from django.utils.html import format_html
 from django.conf.urls import url
+from django.db.models.query import QuerySet
 from ..models import Person, Category, NewCategory, Keyword, Resource
 from .utils import Gist
 from mptt.admin import DraggableMPTTAdmin
@@ -122,11 +123,11 @@ class ResourceForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ResourceForm, self).__init__(*args, **kwargs)
-        new_category_element = NewCategory.objects.first()
-        if new_category_element is not None:
-            self.fields['newcategories'].queryset = \
-                new_category_element.get_leafnodes()
-
+        if NewCategory.objects.all():
+            all_categories = NewCategory.objects.all()
+            leaf_ids = [c.id for c in all_categories if c.is_leaf_node()]
+            leaf_qs = all_categories.filter(id__in=leaf_ids)
+            self.fields['newcategories'].queryset = leaf_qs
 
 
 @admin.register(Resource)

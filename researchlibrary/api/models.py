@@ -39,6 +39,7 @@ class Category(models.Model):
         verbose_name = 'category (old)'
         verbose_name_plural = 'categories (old)'
 
+
 class NewCategory(MPTTModel):
     """
     The category of a resource, using mptt for tree management
