@@ -152,6 +152,7 @@ USE_TZ = True
 STATIC_ROOT = 'static/'
 STATIC_URL = '/static/'
 
+HAYSTACK_ITERATOR_LOAD_PER_QUERY = 100
 
 LOGGING = {
     'version': 1,
