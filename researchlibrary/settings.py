@@ -53,7 +53,12 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
         'PATH': os.path.join(BASE_DIR, 'whoosh_index'),
     },
+    'solr': {
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr/'
+    },
 }
+
 HAYSTACK_SIGNAL_PROCESSOR = 'researchlibrary.api.signal_processors.SignalProcessor'
 
 REST_FRAMEWORK = {
