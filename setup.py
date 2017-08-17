@@ -41,6 +41,7 @@ setup(
         'markdown',  # Optional addition to Django REST Framework
         'oauth2client',  # For GSpread
         'psycopg2',
+        'pysolr',
         'python-dateutil',
         'pytz',
         'readability-lxml',
