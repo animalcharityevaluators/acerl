@@ -14,9 +14,7 @@ from .models import Resource, Keyword, Person, NewCategory
 from .serializers import (ResourceSerializer, SearchSerializer,
                           SuggestSerializer)
 
-from debug_toolbar_line_profiler import profile_additional
 from boto.s3.connection import S3Connection
-from debug_toolbar_line_profiler import signals
 
 import logging
 
@@ -125,14 +123,6 @@ class SearchViewSet(viewsets.GenericViewSet):
                 "resource_count": resource_count
             }
 
-
-def register_profile_views(sender, profiler, **kwargs):
-    profiler.add_function(SearchViewSet.list)
-    profiler.add_function(SearchViewSet._get_attribute_sets)
-    profiler.add_function(SearchViewSet.get_categories_list)
-
-signals.profiler_setup.connect(register_profile_views,
-                               dispatch_uid='register_profile_views')
 
 class SuggestViewSet(viewsets.GenericViewSet):
     """
