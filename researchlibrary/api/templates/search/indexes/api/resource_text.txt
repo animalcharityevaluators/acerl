@@ -6,4 +6,3 @@ magick
 {% for keyword in object.keywords.all %} {{ keyword.name }} {% endfor %}
 {{ object.abstract }}
 {{ object.review }}
-{{ object.fulltext }}

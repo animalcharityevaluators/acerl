@@ -14,6 +14,15 @@ from .models import Resource, Keyword, Person, NewCategory
 from .serializers import (ResourceSerializer, SearchSerializer,
                           SuggestSerializer)
 
+from debug_toolbar_line_profiler import profile_additional
+from boto.s3.connection import S3Connection
+from debug_toolbar_line_profiler import signals
+
+import logging
+
+logger = logging.getLogger("debugging")
+
+
 class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     The view of the /list endpoint of the API. For the API documentation
@@ -38,19 +47,19 @@ class SearchViewSet(viewsets.GenericViewSet):
         user-selected criteria.
         """
 
-        # This is found separately so that the counts per category are computed properly
-        queryset_no_categories = self._filtered_queryset_no_categories(request)
+        # # This is found separately so that the counts per category are computed properly
+        # queryset_no_categories = self._filtered_queryset_no_categories(request)
 
-        queryset = self._filtered_queryset(request, queryset_no_categories)
+        queryset = self._filtered_queryset(request)
         page = self.paginate_queryset(queryset)
         serializer = SearchSerializer(page, many=True, context={'request': request})
         response = self.get_paginated_response(serializer.data)
-        sets = self._get_attribute_sets(queryset, queryset_no_categories)
+        sets = self._get_attribute_sets(queryset)
         response.data.update(sets)
         return response
 
 
-    def _filtered_queryset_no_categories(self, request):
+    def _filtered_queryset(self, request):
         query = request.GET.get('q', 'magick')  # Getting all resources unfiltered takes about 3 s;
                                                 # getting all resources filtered by a word that’s
                                                 # contained in every one of them less than 0.1 s.
@@ -58,49 +67,56 @@ class SearchViewSet(viewsets.GenericViewSet):
         resource_type_filters = request.GET.getlist('type')
         min_year_filter = request.GET.get('minyear', 1000)
         max_year_filter = request.GET.get('maxyear', datetime.MAXYEAR)
+        category_filters = request.GET.getlist('category')
         sorting = request.GET.get('sort', '')
-        queryset = self.queryset.filter(content=Raw(query)).models(Resource).highlight()
+        queryset = SearchQuerySet() \
+            .filter(content=query) \
+            .filter(published__range=
+                [datetime.date(min_year_filter, 1, 1),
+                 datetime.date(max_year_filter, 1, 1)]) \
+            .facet('newcategories')
+        logger.debug(len(queryset))
 
         if keyword_filters:
             queryset = queryset.filter(keywords__in=keyword_filters)
+
         if resource_type_filters:
             queryset = queryset.filter(resource_type__in=resource_type_filters)
-        queryset = queryset.filter(published__year__range=[min_year_filter, max_year_filter])
-        if queryset and sorting.strip('-') in queryset[0]._additional_fields:
-            queryset = queryset.order_by(sorting)
-        return queryset
 
-    def _filtered_queryset(self, request, queryset):
-        category_filters = request.GET.getlist('category')
         if category_filters:
             queryset = queryset.filter(newcategories__in=category_filters)
+        if queryset and sorting.strip('-') in queryset[0]._additional_fields:
+            queryset = queryset.order_by(sorting)
+
         return queryset
 
-    def _get_attribute_sets(self, queryset, queryset_no_categories):
+    def _get_attribute_sets(self, queryset):
         lists = defaultdict(list)
-        for hit in queryset:
-            # Linearize all attributes including all duplicates
-            lists['keywords_list'].extend(hit.keywords)
-            lists['resource_type_list'].append(hit.resource_type)
-            lists['published_list'].append(hit.published.year)
+
+        # for hit in queryset:
+        #     # Linearize all attributes including all duplicates
+        #     lists['keywords_list'].extend(hit.keywords)
+        #     lists['resource_type_list'].append(hit.resource_type)
+        #     lists['published_list'].append(hit.published.year)
         for key in lists.keys():
             lists[key] = list(filter(bool, set(lists[key])))  # Make unique and nonempty
             lists[key].sort(  # Sort alphabetically ignoring case
                 key=lambda value: value.lower() if hasattr(value, 'lower') else value)
         roots = NewCategory.objects.filter(level=0)
-        lists['categories_list'] = [self.get_categories_list(root, queryset_no_categories) for root in roots]
+        logger.debug(queryset.facet_counts())
+        cat_counts = dict(queryset.facet_counts()['fields']['newcategories'])
+        lists['categories_list'] = [self.get_categories_list(root, cat_counts) for root in roots]
         return lists
 
-    def get_categories_list(self, category, resource_queryset):
+    def get_categories_list(self, category, facet_counts):
         if category.is_leaf_node():
             return {
                 "name": category.name,
                 "children": [],
-                "resource_count": len([0 for r in resource_queryset if category.name in r.newcategories])
-                # should perhaps use a SearchQuerySet, but this caused problems
+                "resource_count": facet_counts.get(category.name, 0)
             }
         else:
-            children = [self.get_categories_list(child, resource_queryset)
+            children = [self.get_categories_list(child, facet_counts)
                 for child in category.get_children()]
             resource_count = sum([child['resource_count'] for child in children])
             return {
@@ -108,6 +124,15 @@ class SearchViewSet(viewsets.GenericViewSet):
                 "children": children,
                 "resource_count": resource_count
             }
+
+
+def register_profile_views(sender, profiler, **kwargs):
+    profiler.add_function(SearchViewSet.list)
+    profiler.add_function(SearchViewSet._get_attribute_sets)
+    profiler.add_function(SearchViewSet.get_categories_list)
+
+signals.profiler_setup.connect(register_profile_views,
+                               dispatch_uid='register_profile_views')
 
 class SuggestViewSet(viewsets.GenericViewSet):
     """
