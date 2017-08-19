@@ -14,8 +14,6 @@ from .models import Resource, Keyword, Person, NewCategory
 from .serializers import (ResourceSerializer, SearchSerializer,
                           SuggestSerializer)
 
-from boto.s3.connection import S3Connection
-
 import logging
 
 logger = logging.getLogger("debugging")
