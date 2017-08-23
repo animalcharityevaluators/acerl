@@ -61,8 +61,8 @@ class SearchViewSet(viewsets.GenericViewSet):
             query=":"
         keyword_filters = request.GET.getlist('keyword')
         resource_type_filters = request.GET.getlist('type')
-        min_year_filter = request.GET.get('minyear', 1000)
-        max_year_filter = request.GET.get('maxyear', datetime.MAXYEAR)
+        min_year_filter = int(request.GET.get('minyear', 1000))
+        max_year_filter = int(request.GET.get('maxyear', datetime.MAXYEAR))
         category_filters = request.GET.getlist('category')
         sorting = request.GET.get('sort', '')
         queryset = SearchQuerySet() \
