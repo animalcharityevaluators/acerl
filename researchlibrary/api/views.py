@@ -71,7 +71,8 @@ class SearchViewSet(viewsets.GenericViewSet):
                 published__range=
                 [datetime.date(min_year_filter, 1, 1),
                  datetime.date(max_year_filter, 1, 1)]) \
-            .facet('newcategories')
+            .facet('newcategories') \
+            .facet('keywords')
 
         if keyword_filters:
             queryset = queryset.filter(keywords__in=keyword_filters)
@@ -97,6 +98,8 @@ class SearchViewSet(viewsets.GenericViewSet):
             lists[key] = list(filter(bool, set(lists[key])))  # Make unique and nonempty
             lists[key].sort(  # Sort alphabetically ignoring case
                 key=lambda value: value.lower() if hasattr(value, 'lower') else value)
+        keywords = [k for k, _ in queryset.facet_counts()['fields']['keywords']]
+        lists['keywords_list'] = keywords
         roots = NewCategory.objects.filter(level=0)
         logger.debug(queryset.facet_counts())
         cat_counts = dict(queryset.facet_counts()['fields']['newcategories'])
