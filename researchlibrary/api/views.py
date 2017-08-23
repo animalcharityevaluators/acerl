@@ -56,7 +56,7 @@ class SearchViewSet(viewsets.GenericViewSet):
 
 
     def _filtered_queryset(self, request):
-        query = request.GET.get('q', 'magick')  # Getting all resources unfiltered takes about 3 s;
+        query = request.GET.get('q', ':')  # Getting all resources unfiltered takes about 3 s;
                                                 # getting all resources filtered by a word that’s
                                                 # contained in every one of them less than 0.1 s.
         keyword_filters = request.GET.getlist('keyword')
@@ -66,12 +66,12 @@ class SearchViewSet(viewsets.GenericViewSet):
         category_filters = request.GET.getlist('category')
         sorting = request.GET.get('sort', '')
         queryset = SearchQuerySet() \
-            .filter(content=query) \
-            .filter(published__range=
+            .filter(
+                content=query,
+                published__range=
                 [datetime.date(min_year_filter, 1, 1),
                  datetime.date(max_year_filter, 1, 1)]) \
             .facet('newcategories')
-        logger.debug(len(queryset))
 
         if keyword_filters:
             queryset = queryset.filter(keywords__in=keyword_filters)

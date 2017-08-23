@@ -1,4 +1,3 @@
-magick
 {{ object.title }}
 {{ object.subtitle }}
 {% for author in object.authors.all %} {{ author.name }} {% endfor %}
