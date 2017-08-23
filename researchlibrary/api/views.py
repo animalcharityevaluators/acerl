@@ -89,11 +89,10 @@ class SearchViewSet(viewsets.GenericViewSet):
     def _get_attribute_sets(self, queryset):
         lists = defaultdict(list)
 
-        # for hit in queryset:
-        #     # Linearize all attributes including all duplicates
-        #     lists['keywords_list'].extend(hit.keywords)
-        #     lists['resource_type_list'].append(hit.resource_type)
-        #     lists['published_list'].append(hit.published.year)
+        for hit in queryset:
+            # Linearize all attributes including all duplicates
+            lists['resource_type_list'].append(hit.resource_type)
+            lists['published_list'].append(hit.published.year)
         for key in lists.keys():
             lists[key] = list(filter(bool, set(lists[key])))  # Make unique and nonempty
             lists[key].sort(  # Sort alphabetically ignoring case
