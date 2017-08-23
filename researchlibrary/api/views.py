@@ -56,9 +56,9 @@ class SearchViewSet(viewsets.GenericViewSet):
 
 
     def _filtered_queryset(self, request):
-        query = request.GET.get('q', ':')  # Getting all resources unfiltered takes about 3 s;
-                                                # getting all resources filtered by a word that’s
-                                                # contained in every one of them less than 0.1 s.
+        query = request.GET.get('q', ':')
+        if query == "":
+            query=":"
         keyword_filters = request.GET.getlist('keyword')
         resource_type_filters = request.GET.getlist('type')
         min_year_filter = request.GET.get('minyear', 1000)
