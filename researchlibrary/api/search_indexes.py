@@ -11,7 +11,11 @@ from .models import Keyword, Person, Resource
 
 
 class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
-    text = indexes.CharField(document=True, use_template=True)
+    text = indexes.CharField(
+        document=True,
+        use_template=True,
+        template_name='search/indexes/api/resource_text.txt'
+    )
     published = indexes.DateField(model_attr='published', null=True)
     abstract = indexes.CharField(model_attr='abstract', null=True)
     review = indexes.CharField(model_attr='review', null=True)

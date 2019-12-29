@@ -17,6 +17,10 @@ from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
 logger = logging.getLogger("debugging")
 
 
+class EmptyResponseError(ValueError):
+    pass
+
+
 class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     The view of the /list endpoint of the API. For the API documentation
@@ -52,11 +56,8 @@ class SearchViewSet(viewsets.GenericViewSet):
         response.data.update(sets)
         return response
 
-
     def _filtered_queryset(self, request):
-        query = request.GET.get('q', ':')
-        if query == "":
-            query=":"
+        query = request.GET.get('q') or ':'
         keyword_filters = request.GET.getlist('keyword')
         resource_type_filters = request.GET.getlist('type')
         min_year_filter = int(request.GET.get('minyear', 1000))
@@ -91,11 +92,14 @@ class SearchViewSet(viewsets.GenericViewSet):
             lists[key] = list(filter(bool, set(lists[key])))  # Make unique and nonempty
             lists[key].sort(  # Sort alphabetically ignoring case
                 key=lambda value: value.lower() if hasattr(value, 'lower') else value)
-        keywords = [k for k, _ in queryset.facet_counts()['fields']['keywords']]
+        facet_counts = queryset.facet_counts()
+        logger.debug(facet_counts)
+        if not facet_counts:
+            raise EmptyResponseError
+        keywords = [k for k, _ in facet_counts['fields']['keywords']]
         lists['keywords_list'] = keywords
         roots = NewCategory.objects.filter(level=0)
-        logger.debug(queryset.facet_counts())
-        cat_counts = dict(queryset.facet_counts()['fields']['newcategories'])
+        cat_counts = dict(facet_counts['fields']['newcategories'])
         lists['categories_list'] = [self.get_categories_list(root, cat_counts) for root in roots]
         return lists
 
