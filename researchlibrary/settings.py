@@ -24,7 +24,7 @@ SECRET_KEY = 'rw_s2c!vcp2@838z^mnwy(sk-fftt&mli%dg&*=v^n^^&_^u0r'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'whoosh',
     'haystack',
     'rest_framework',
     'django_select2',
@@ -52,8 +51,9 @@ STATIC_URL = '/static/'
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/'
+        'ENGINE': 'researchlibrary.api.search_backends.CustomSolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr/acerl',
+        'ADMIN_URL': 'http://127.0.0.1:8983/solr/admin/cores'
     },
 }
 
@@ -102,7 +102,7 @@ WSGI_APPLICATION = 'researchlibrary.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'rlibdb',
+        'NAME': 'acerl',
         'USER': 'acerl',
         'PASSWORD': 'password',
         'HOST': 'localhost',
