@@ -1,12 +1,13 @@
 """Acerl API search indices.
 
 The Acerl API allows indexed searches over the content of resources
-(e.g. papers, books, blog posts) as well as several meta data. This
+(e.g., papers, books, blog posts) as well as several meta data. This
 module defines the indices.
 """
 
 from haystack import indexes
-from .models import Resource, Keyword, Person
+
+from .models import Keyword, Person, Resource
 
 
 class ResourceIndex(indexes.SearchIndex, indexes.Indexable):

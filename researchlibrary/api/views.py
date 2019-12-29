@@ -4,17 +4,15 @@ The Acerl API is self-documenting. Call the API base URL in a
 web browser for an overview of the available endpoints.
 """
 import datetime
+import logging
 from collections import defaultdict
 
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
 from rest_framework import viewsets
 
-from .models import Resource, Keyword, Person, NewCategory
-from .serializers import (ResourceSerializer, SearchSerializer,
-                          SuggestSerializer)
-
-import logging
+from .models import Keyword, NewCategory, Person, Resource
+from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
 
 logger = logging.getLogger("debugging")
 
@@ -73,23 +71,18 @@ class SearchViewSet(viewsets.GenericViewSet):
                  datetime.date(max_year_filter, 1, 1)]) \
             .facet('newcategories') \
             .facet('keywords')
-
         if keyword_filters:
             queryset = queryset.filter(keywords__in=keyword_filters)
-
         if resource_type_filters:
             queryset = queryset.filter(resource_type__in=resource_type_filters)
-
         if category_filters:
             queryset = queryset.filter(newcategories__in=category_filters)
         if queryset and sorting.strip('-') in queryset[0]._additional_fields:
             queryset = queryset.order_by(sorting)
-
         return queryset
 
     def _get_attribute_sets(self, queryset):
         lists = defaultdict(list)
-
         for hit in queryset:
             # Linearize all attributes including all duplicates
             lists['resource_type_list'].append(hit.resource_type)

@@ -1,11 +1,13 @@
 """Acerl API model definitions"""
 
 import datetime
-from django.db import models
+
 from django.core.exceptions import ValidationError
-from .models_choices import SOURCETYPE_CHOICES, RESOURCE_TYPE_CHOICES
-from mptt.models import MPTTModel, TreeForeignKey
+from django.db import models
 from mptt.fields import TreeManyToManyField
+from mptt.models import MPTTModel, TreeForeignKey
+
+from .models_choices import RESOURCE_TYPE_CHOICES, SOURCETYPE_CHOICES
 
 
 class Person(models.Model):
@@ -56,6 +58,7 @@ class NewCategory(MPTTModel):
     class Meta:
         verbose_name = 'category'
         verbose_name_plural = 'categories'
+
 
 class Keyword(models.Model):
     """
