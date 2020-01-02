@@ -19,94 +19,92 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'rw_s2c!vcp2@838z^mnwy(sk-fftt&mli%dg&*=v^n^^&_^u0r'
+SECRET_KEY = "rw_s2c!vcp2@838z^mnwy(sk-fftt&mli%dg&*=v^n^^&_^u0r"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 
 INSTALLED_APPS = [
-    'researchlibrary.api',  # First position for static files override
-
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'haystack',
-    'rest_framework',
-    'django_select2',
-    'corsheaders',
-    'mptt'
+    "researchlibrary.api",  # First position for static files override
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "whoosh",
+    "haystack",
+    "rest_framework",
+    "django_select2",
+    "corsheaders",
+    "mptt",
 ]
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'researchlibrary.api.search_backends.CustomSolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/acerl',
-        'ADMIN_URL': 'http://127.0.0.1:8983/solr/admin/cores'
-    },
+    "default": {
+        "ENGINE": "researchlibrary.api.search.backends.CustomWhooshEngine",
+        "PATH": os.path.join(os.path.dirname(__file__), "..", "whoosh_index"),
+    }
 }
 
-HAYSTACK_SIGNAL_PROCESSOR = 'researchlibrary.api.signal_processors.SignalProcessor'
+HAYSTACK_SIGNAL_PROCESSOR = "researchlibrary.api.signal_processors.SignalProcessor"
 
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'researchlibrary.api.pagination.ResourcePagination',
-}
+HAYSTACK_ITERATOR_LOAD_PER_QUERY = 100
+
+REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "researchlibrary.api.pagination.ResourcePagination"}
 
 MIDDLEWARE_CLASSES = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'researchlibrary.urls'
+ROOT_URLCONF = "researchlibrary.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'researchlibrary', 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "researchlibrary", "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ]
         },
-    },
+    }
 ]
 
-WSGI_APPLICATION = 'researchlibrary.wsgi.application'
+WSGI_APPLICATION = "researchlibrary.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'acerl',
-        'USER': 'acerl',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "acerl",
+        "USER": "acerl",
+        "PASSWORD": "password",
+        "HOST": "localhost",
+        "PORT": "",
     }
 }
 

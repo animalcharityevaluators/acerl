@@ -24,9 +24,3 @@ CACHES = {
         }
     }
 }
-
-
-try:
-    from .settings_override import *  # NOQA
-except ImportError:
-    pass

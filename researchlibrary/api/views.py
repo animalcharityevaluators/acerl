@@ -3,22 +3,19 @@
 The Acerl API is self-documenting. Call the API base URL in a
 web browser for an overview of the available endpoints.
 """
-import datetime
 import logging
 from collections import defaultdict
+from datetime import datetime, timedelta, MAXYEAR
 
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
 from rest_framework import viewsets
+from whoosh import sorting
 
 from .models import Keyword, NewCategory, Person, Resource
 from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
 
 logger = logging.getLogger("debugging")
-
-
-class EmptyResponseError(ValueError):
-    pass
 
 
 class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -52,8 +49,8 @@ class SearchViewSet(viewsets.GenericViewSet):
         page = self.paginate_queryset(queryset)
         serializer = SearchSerializer(page, many=True, context={'request': request})
         response = self.get_paginated_response(serializer.data)
-        sets = self._get_attribute_sets(queryset)
-        response.data.update(sets)
+        facets = self._get_facets(queryset)
+        response.data.update(facets)
         return response
 
     def _filtered_queryset(self, request):
@@ -61,15 +58,14 @@ class SearchViewSet(viewsets.GenericViewSet):
         keyword_filters = request.GET.getlist('keyword')
         resource_type_filters = request.GET.getlist('type')
         min_year_filter = int(request.GET.get('minyear', 1000))
-        max_year_filter = int(request.GET.get('maxyear', datetime.MAXYEAR))
+        max_year_filter = int(request.GET.get('maxyear', MAXYEAR))
         category_filters = request.GET.getlist('category')
         sorting = request.GET.get('sort', '')
-        queryset = SearchQuerySet() \
-            .filter(
-                content=query,
-                published__range=
-                [datetime.date(min_year_filter, 1, 1),
-                 datetime.date(max_year_filter, 1, 1)]) \
+        queryset = self.queryset \
+            .models(Resource) \
+            .filter(content=Raw(query)) \
+            .filter(published__year__range=[min_year_filter, max_year_filter]) \
+            .highlight() \
             .facet('newcategories') \
             .facet('keywords')
         if keyword_filters:
@@ -81,44 +77,55 @@ class SearchViewSet(viewsets.GenericViewSet):
         if queryset and sorting.strip('-') in queryset[0]._additional_fields:
             queryset = queryset.order_by(sorting)
         return queryset
+    
+    @property
+    def facet_fields(self):
+        facet_names = [
+            'resource_type', 
+            'year_published', 
+            'newcategories', 
+            'keywords'
+        ]
+        return {
+            name: sorting.FieldFacet(name, allow_overlap=True, maptype=sorting.Count)
+            for name in facet_names
+        }
 
-    def _get_attribute_sets(self, queryset):
-        lists = defaultdict(list)
-        for hit in queryset:
-            # Linearize all attributes including all duplicates
-            lists['resource_type_list'].append(hit.resource_type)
-            lists['published_list'].append(hit.published.year)
-        for key in lists.keys():
-            lists[key] = list(filter(bool, set(lists[key])))  # Make unique and nonempty
-            lists[key].sort(  # Sort alphabetically ignoring case
-                key=lambda value: value.lower() if hasattr(value, 'lower') else value)
-        facet_counts = queryset.facet_counts()
-        logger.debug(facet_counts)
-        if not facet_counts:
-            raise EmptyResponseError
-        keywords = [k for k, _ in facet_counts['fields']['keywords']]
-        lists['keywords_list'] = keywords
-        roots = NewCategory.objects.filter(level=0)
-        cat_counts = dict(facet_counts['fields']['newcategories'])
-        lists['categories_list'] = [self.get_categories_list(root, cat_counts) for root in roots]
-        return lists
+    def _get_facets(self, queryset):
+        whoosh = queryset.query.backend
+        searcher = whoosh.index.searcher()
+        query = whoosh.parser.parse(queryset.query.build_query())
+        results = searcher.search(query, groupedby=self.facet_fields)
+        facet_counts = {name: results.groups(name) for name in results.facet_names()}
+        categories_tree = [
+            self._format_categories_list(category, facet_counts['newcategories'])
+            for category in NewCategory.objects.filter(level=0)
+        ]
+        return {
+            'categories_list': categories_tree,
+            'resource_type_list': filter(bool, facet_counts['resource_type'].keys()),
+            'published_list': filter(bool, facet_counts['year_published'].keys()),
+            # Keywords are currently not displayed in the frontend anyway
+            'keywords_list': []  # filter(bool, facet_counts['keywords'].keys()),
+        }
 
-    def get_categories_list(self, category, facet_counts):
+    def _format_categories_list(self, category, facet_counts):
         if category.is_leaf_node():
             return {
                 "name": category.name,
                 "children": [],
                 "resource_count": facet_counts.get(category.name, 0)
             }
-        else:
-            children = [self.get_categories_list(child, facet_counts)
-                for child in category.get_children()]
-            resource_count = sum([child['resource_count'] for child in children])
-            return {
-                "name": category.name,
-                "children": children,
-                "resource_count": resource_count
-            }
+        children = [
+            self._format_categories_list(child, facet_counts)
+            for child in category.get_children()
+        ]
+        resource_count = sum(child['resource_count'] for child in children)
+        return {
+            "name": category.name,
+            "children": children,
+            "resource_count": resource_count
+        }
 
 
 class SuggestViewSet(viewsets.GenericViewSet):

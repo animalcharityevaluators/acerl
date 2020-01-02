@@ -47,7 +47,6 @@ class Gist:
 
     @classmethod
     def find_keywords(cls, text):
-        return [] # TODO: potentially rewrite this to work with solr, instead of whoosh.
         whoosh_backend = SearchForm().searchqueryset.query.backend
         if not whoosh_backend.setup_complete:
             whoosh_backend.setup()
