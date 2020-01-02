@@ -155,14 +155,11 @@
                 $('#id_journal').val(ui.item.bibtex.journal);
                 $('#id_volume').val(ui.item.bibtex.volume);
                 var authors = ui.item.bibtex.author.split(' and ');
-                console.log(authors);
                 $(authors).each(function (index, author) {
-                    console.log(author);
                     if (author.indexOf(', ') > -1) {
                         var names = author.split(', ');
                         author = names[1] + ' ' + names[0];
                     }
-                    console.log(author);
                     addOption($('#id_authors'), author);
                 });
             }
