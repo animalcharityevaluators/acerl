@@ -1,5 +1,6 @@
 import requests
 from django.contrib import admin
+from django.contrib.admin import widgets
 from django.contrib.admin.utils import unquote
 from django.db.models import Count
 from django.core.urlresolvers import reverse
@@ -120,6 +121,9 @@ class ResourceForm(ModelForm):
     class Meta:
         model = Resource
         fields = ['newcategories']
+        widgets = {
+            'approx_published': widgets.AdminDateWidget
+        }
 
     def __init__(self, *args, **kwargs):
         super(ResourceForm, self).__init__(*args, **kwargs)
@@ -139,7 +143,6 @@ class ResourceAdmin(admin.ModelAdmin):
     search_fields = ['title', 'authors__name', 'editors__name', 'url', 'publisher', 'subtitle',
                      'journal', 'series', 'edition', 'sourcetype']
     list_filter = ['resource_type', 'categories', 'newcategories', 'sourcetype', 'keywords']
-    date_hierarchy = 'published'
     filter_horizontal = ['authors', 'editors', 'keywords', 'categories', 'newcategories']
     fieldsets = (
         ('Main Fields', {

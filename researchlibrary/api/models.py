@@ -4,6 +4,7 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django_date_extensions.fields import ApproximateDateField
 from mptt.fields import TreeManyToManyField
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -80,21 +81,25 @@ class Resource(models.Model):
     """
 
     # Mandatory fields
-    authors = models.ManyToManyField(Person, related_name='resources_authored')
+    authors = models.ManyToManyField(Person, related_name="resources_authored")
     title = models.CharField(max_length=300, unique=True)
-    published = models.DateField('date published', help_text='ISO 8601 format, e.g., 1946-07-06.')
-    resource_type = models.CharField(
-        max_length=30, choices=RESOURCE_TYPE_CHOICES, blank=True)
+    published = ApproximateDateField(
+        "approx. publication date",
+        default="1000-01-01",
+        help_text="Formats YYYY-MM-DD, YYYY-MM, and YYYY.",
+    )
+    resource_type = models.CharField(max_length=30, choices=RESOURCE_TYPE_CHOICES, blank=True)
 
     # Optional fields
-    accessed = models.DateField('date accessed', help_text='ISO 8601 format, e.g., 1806-05-20.',
-                                null=True, blank=True)
-    url = models.URLField(max_length=2000, blank=True, verbose_name='URL')
-    fulltext_url = models.URLField(max_length=2000, blank=True, verbose_name='fulltext URL')
-    categories = models.ManyToManyField(Category, related_name='resources', blank=True)
-    newcategories = TreeManyToManyField(NewCategory, related_name='resources', blank=True)
-    keywords = models.ManyToManyField(Keyword, related_name='resources', blank=True)
-    editors = models.ManyToManyField(Person, related_name='resources_edited', blank=True)
+    accessed = models.DateField(
+        "date accessed", help_text="ISO 8601 format, e.g., 1806-05-20.", null=True, blank=True
+    )
+    url = models.URLField(max_length=2000, blank=True, verbose_name="URL")
+    fulltext_url = models.URLField(max_length=2000, blank=True, verbose_name="fulltext URL")
+    categories = models.ManyToManyField(Category, related_name="resources", blank=True)
+    newcategories = TreeManyToManyField(NewCategory, related_name="resources", blank=True)
+    keywords = models.ManyToManyField(Keyword, related_name="resources", blank=True)
+    editors = models.ManyToManyField(Person, related_name="resources_edited", blank=True)
     publisher = models.CharField(max_length=300, blank=True)
     subtitle = models.CharField(max_length=500, blank=True)
     abstract = models.TextField(blank=True)
