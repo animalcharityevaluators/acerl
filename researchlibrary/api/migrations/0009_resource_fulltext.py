@@ -7,14 +7,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0008_auto_20160608_1347'),
-    ]
+    dependencies = [("api", "0008_auto_20160608_1347")]
 
     operations = [
         migrations.AddField(
-            model_name='resource',
-            name='fulltext',
-            field=models.TextField(blank=True),
-        ),
+            model_name="resource", name="fulltext", field=models.TextField(blank=True)
+        )
     ]

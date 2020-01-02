@@ -20,16 +20,20 @@ from django.views.static import serve
 from django.views.generic import RedirectView
 from . import settings
 
-admin.site.site_header = 'Research Library Administration'
+admin.site.site_header = "Research Library Administration"
 
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(pattern_name='admin:index')),
-    url(r'^api/', include('researchlibrary.api.urls')),
-    url(r'^admin/', admin.site.urls),
+    url(r"^$", RedirectView.as_view(pattern_name="admin:index")),
+    url(r"^api/", include("researchlibrary.api.urls")),
+    url(r"^admin/", admin.site.urls),
 ]
 
 
 urlpatterns += [
-    url(r'^{url}(?P<path>.*)'.format(url=settings.STATIC_URL[1:]),
-        serve, {'document_root': settings.STATIC_ROOT})]
+    url(
+        r"^{url}(?P<path>.*)".format(url=settings.STATIC_URL[1:]),
+        serve,
+        {"document_root": settings.STATIC_ROOT},
+    )
+]

@@ -7,102 +7,103 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0001_initial'),
-    ]
+    dependencies = [("api", "0001_initial")]
 
     operations = [
         migrations.CreateModel(
-            name='Keyword',
+            name="Keyword",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
             ],
         ),
-        migrations.AlterModelOptions(
-            name='author',
-            options={},
-        ),
-        migrations.AlterModelOptions(
-            name='category',
-            options={},
-        ),
-        migrations.AlterModelOptions(
-            name='editor',
-            options={},
-        ),
-        migrations.RemoveField(
-            model_name='author',
-            name='biography',
-        ),
-        migrations.RemoveField(
-            model_name='author',
-            name='email',
-        ),
-        migrations.RemoveField(
-            model_name='author',
-            name='firstname',
-        ),
-        migrations.RemoveField(
-            model_name='author',
-            name='lastname',
-        ),
-        migrations.RemoveField(
-            model_name='resource',
-            name='publisher',
-        ),
+        migrations.AlterModelOptions(name="author", options={}),
+        migrations.AlterModelOptions(name="category", options={}),
+        migrations.AlterModelOptions(name="editor", options={}),
+        migrations.RemoveField(model_name="author", name="biography"),
+        migrations.RemoveField(model_name="author", name="email"),
+        migrations.RemoveField(model_name="author", name="firstname"),
+        migrations.RemoveField(model_name="author", name="lastname"),
+        migrations.RemoveField(model_name="resource", name="publisher"),
         migrations.AddField(
-            model_name='resource',
-            name='publisher',
+            model_name="resource",
+            name="publisher",
             field=models.CharField(max_length=300, blank=True),
         ),
         migrations.AddField(
-            model_name='author',
-            name='name',
-            field=models.CharField(default='Anonymous', max_length=100),
+            model_name="author",
+            name="name",
+            field=models.CharField(default="Anonymous", max_length=100),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='resource',
-            name='resource_type',
-            field=models.CharField(blank=True, choices=[('STUDY', 'Misc. object-level study'), ('CASESTUDY', 'Case study'), ('QUASI_EXPERIMENT', 'Quasi-experiment'), ('RCT', 'Randomized controlled trial'), ('RESEARCH_SUMMARY', 'Research summary (informal)'), ('METASTUDY', 'Metastudy (informal)'), ('SYSTEMATIC_REVIEW', 'Systematic review'), ('OPINION_PIECE', 'Opinion piece'), ('HISTORICAL_DOCUMENT', 'Historical document'), ('ENCYCLOPEDIA_ARTICLE', 'Encyclopedia article'), ('BOOK', 'Book'), ('NEWS_ARTICLE', 'Misc. news article'), ('BLOG_ARTICLE', 'Misc. blog article'), ('OTHER', 'Other')], max_length=30),
+            model_name="resource",
+            name="resource_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("STUDY", "Misc. object-level study"),
+                    ("CASESTUDY", "Case study"),
+                    ("QUASI_EXPERIMENT", "Quasi-experiment"),
+                    ("RCT", "Randomized controlled trial"),
+                    ("RESEARCH_SUMMARY", "Research summary (informal)"),
+                    ("METASTUDY", "Metastudy (informal)"),
+                    ("SYSTEMATIC_REVIEW", "Systematic review"),
+                    ("OPINION_PIECE", "Opinion piece"),
+                    ("HISTORICAL_DOCUMENT", "Historical document"),
+                    ("ENCYCLOPEDIA_ARTICLE", "Encyclopedia article"),
+                    ("BOOK", "Book"),
+                    ("NEWS_ARTICLE", "Misc. news article"),
+                    ("BLOG_ARTICLE", "Misc. blog article"),
+                    ("OTHER", "Other"),
+                ],
+                max_length=30,
+            ),
         ),
         migrations.AddField(
-            model_name='resource',
-            name='review',
-            field=models.TextField(blank=True),
+            model_name="resource", name="review", field=models.TextField(blank=True)
         ),
         migrations.AlterField(
-            model_name='editor',
-            name='name',
-            field=models.CharField(max_length=100),
+            model_name="editor", name="name", field=models.CharField(max_length=100)
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='abstract',
-            field=models.TextField(blank=True),
+            model_name="resource", name="abstract", field=models.TextField(blank=True)
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='date',
-            field=models.DateField(verbose_name='date published'),
+            model_name="resource",
+            name="date",
+            field=models.DateField(verbose_name="date published"),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='publisher',
+            model_name="resource",
+            name="publisher",
             field=models.CharField(blank=True, max_length=300),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='sourcetype',
-            field=models.CharField(blank=True, choices=[('NEWSPAPER', 'Newspaper'), ('JOURNAL', 'Journal'), ('BOOK', 'Book'), ('CONFERENCE', 'Conference'), ('BLOG', 'Blog'), ('OTHER', 'Other')], max_length=30),
+            model_name="resource",
+            name="sourcetype",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("NEWSPAPER", "Newspaper"),
+                    ("JOURNAL", "Journal"),
+                    ("BOOK", "Book"),
+                    ("CONFERENCE", "Conference"),
+                    ("BLOG", "Blog"),
+                    ("OTHER", "Other"),
+                ],
+                max_length=30,
+            ),
         ),
-        migrations.DeleteModel(
-            name='Publisher',
-        ),
+        migrations.DeleteModel(name="Publisher"),
         migrations.AddField(
-            model_name='resource',
-            name='keywords',
-            field=models.ManyToManyField(blank=True, to='api.Keyword'),
+            model_name="resource",
+            name="keywords",
+            field=models.ManyToManyField(blank=True, to="api.Keyword"),
         ),
     ]

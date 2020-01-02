@@ -7,33 +7,28 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0007_auto_20160608_1052'),
-    ]
+    dependencies = [("api", "0007_auto_20160608_1052")]
 
     operations = [
         migrations.AlterModelOptions(
-            name='category',
-            options={'verbose_name_plural': 'categories'},
+            name="category", options={"verbose_name_plural": "categories"}
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='edition',
+            model_name="resource",
+            name="edition",
             field=models.CharField(blank=True, max_length=300),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='journal',
+            model_name="resource",
+            name="journal",
             field=models.CharField(blank=True, max_length=300),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='series',
-            field=models.CharField(blank=True, max_length=300),
+            model_name="resource", name="series", field=models.CharField(blank=True, max_length=300)
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='subtitle',
+            model_name="resource",
+            name="subtitle",
             field=models.CharField(blank=True, max_length=500),
         ),
     ]

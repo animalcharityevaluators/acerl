@@ -7,28 +7,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0010_auto_20160613_1827'),
-    ]
+    dependencies = [("api", "0010_auto_20160613_1827")]
 
     operations = [
-        migrations.AlterModelOptions(
-            name='person',
-            options={'verbose_name_plural': 'people'},
+        migrations.AlterModelOptions(name="person", options={"verbose_name_plural": "people"}),
+        migrations.AlterField(
+            model_name="category", name="name", field=models.CharField(max_length=50, unique=True)
         ),
         migrations.AlterField(
-            model_name='category',
-            name='name',
-            field=models.CharField(max_length=50, unique=True),
+            model_name="keyword", name="name", field=models.CharField(max_length=50, unique=True)
         ),
         migrations.AlterField(
-            model_name='keyword',
-            name='name',
-            field=models.CharField(max_length=50, unique=True),
-        ),
-        migrations.AlterField(
-            model_name='person',
-            name='name',
-            field=models.CharField(max_length=100, unique=True),
+            model_name="person", name="name", field=models.CharField(max_length=100, unique=True)
         ),
     ]

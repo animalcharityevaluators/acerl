@@ -14,7 +14,6 @@ from .models import Resource
 
 
 class NonNullSerializer(serializers.HyperlinkedModelSerializer):
-
     def to_representation(self, instance):
         """
         Object instance -> Dict of primitive datatypes.
@@ -28,7 +27,7 @@ class NonNullSerializer(serializers.HyperlinkedModelSerializer):
                 continue
             if attribute is not None:
                 represenation = field.to_representation(attribute)
-                if represenation in (None, '', []):
+                if represenation in (None, "", []):
                     # Do not seralize empty objects
                     continue
                 ret[field.field_name] = represenation
@@ -45,9 +44,24 @@ class ResourceSerializer(NonNullSerializer):
 
     class Meta:
         model = Resource
-        fields = ('authors', 'editors',  'title', 'subtitle', 'abstract', 'publisher', 'journal',
-                  'published', 'accessed', 'volume', 'number', 'pages', 'series', 'edition', 'url',
-                  'fulltext_url')
+        fields = (
+            "authors",
+            "editors",
+            "title",
+            "subtitle",
+            "abstract",
+            "publisher",
+            "journal",
+            "published",
+            "accessed",
+            "volume",
+            "number",
+            "pages",
+            "series",
+            "edition",
+            "url",
+            "fulltext_url",
+        )
 
 
 class SearchSerializer(NonNullSerializer):
@@ -59,7 +73,7 @@ class SearchSerializer(NonNullSerializer):
     editors = serializers.StringRelatedField(many=True)
     categories = serializers.StringRelatedField(many=True)
     newcategories = serializers.StringRelatedField(many=True)
-    excerpt = serializers.SerializerMethodField('fetch_excerpt')
+    excerpt = serializers.SerializerMethodField("fetch_excerpt")
 
     def __init__(self, instance=None, data=serializers.empty, **kwargs):
         for entry in instance:
@@ -69,15 +83,34 @@ class SearchSerializer(NonNullSerializer):
 
     def fetch_excerpt(self, obj):
         try:
-            return obj.highlighted['text'][0]
+            return obj.highlighted["text"][0]
         except (TypeError, AttributeError):
             return ""
 
     class Meta:
         model = Resource
-        fields = ('authors', 'editors',  'title', 'subtitle', 'abstract', 'publisher', 'journal',
-                  'published', 'volume', 'number', 'pages', 'series', 'edition', 'url',
-                  'fulltext_url', 'resource_type', 'categories', 'newcategories', 'excerpt', 'review')
+        fields = (
+            "authors",
+            "editors",
+            "title",
+            "subtitle",
+            "abstract",
+            "publisher",
+            "journal",
+            "published",
+            "volume",
+            "number",
+            "pages",
+            "series",
+            "edition",
+            "url",
+            "fulltext_url",
+            "resource_type",
+            "categories",
+            "newcategories",
+            "excerpt",
+            "review",
+        )
 
 
 class SuggestSerializer(serializers.Serializer):

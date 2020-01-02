@@ -7,19 +7,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0002_auto_20160516_1204'),
-    ]
+    dependencies = [("api", "0002_auto_20160516_1204")]
 
     operations = [
         migrations.AlterField(
-            model_name='resource',
-            name='title',
-            field=models.CharField(max_length=300, unique=True),
+            model_name="resource", name="title", field=models.CharField(max_length=300, unique=True)
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='url',
-            field=models.CharField(max_length=2000, unique=True),
+            model_name="resource", name="url", field=models.CharField(max_length=2000, unique=True)
         ),
     ]

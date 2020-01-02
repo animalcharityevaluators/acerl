@@ -12,15 +12,11 @@ RESULTS_CACHE_SIZE = 100
 CACHE_MIDDLEWARE_SECONDS = 60 * 60 * 24 * 30  # one month
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    },
+    "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
     # This cache backend will be used by django-debug-panel
-    'debug-panel': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/tmp/debug-panel-cache',
-        'OPTIONS': {
-            'MAX_ENTRIES': 2000
-        }
-    }
+    "debug-panel": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/tmp/debug-panel-cache",
+        "OPTIONS": {"MAX_ENTRIES": 2000},
+    },
 }

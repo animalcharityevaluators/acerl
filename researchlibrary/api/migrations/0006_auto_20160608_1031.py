@@ -7,25 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0005_resource_accessed'),
-    ]
+    dependencies = [("api", "0005_resource_accessed")]
 
     operations = [
-        migrations.RenameModel(
-            old_name='Author',
-            new_name='Person',
-        ),
-        migrations.DeleteModel(
-            name='Editor',
-        ),
+        migrations.RenameModel(old_name="Author", new_name="Person"),
+        migrations.DeleteModel(name="Editor"),
         migrations.AlterModelOptions(
-            name='resource',
-            options={'get_latest_by': 'published', 'ordering': ['-published', 'title']},
+            name="resource",
+            options={"get_latest_by": "published", "ordering": ["-published", "title"]},
         ),
-        migrations.RenameField(
-            model_name='resource',
-            old_name='date',
-            new_name='published',
-        ),
+        migrations.RenameField(model_name="resource", old_name="date", new_name="published"),
     ]

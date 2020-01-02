@@ -47,45 +47,41 @@ class SearchViewSet(viewsets.GenericViewSet):
 
         queryset = self._filtered_queryset(request)
         page = self.paginate_queryset(queryset)
-        serializer = SearchSerializer(page, many=True, context={'request': request})
+        serializer = SearchSerializer(page, many=True, context={"request": request})
         response = self.get_paginated_response(serializer.data)
         facets = self._get_facets(queryset)
         response.data.update(facets)
         return response
 
     def _filtered_queryset(self, request):
-        query = request.GET.get('q') or ':'
-        keyword_filters = request.GET.getlist('keyword')
-        resource_type_filters = request.GET.getlist('type')
-        min_year_filter = int(request.GET.get('minyear', 1000))
-        max_year_filter = int(request.GET.get('maxyear', MAXYEAR))
-        category_filters = request.GET.getlist('category')
-        sorting = request.GET.get('sort', '')
-        queryset = self.queryset \
-            .models(Resource) \
-            .filter(content=Raw(query)) \
-            .filter(published__year__range=[min_year_filter, max_year_filter]) \
-            .highlight() \
-            .facet('newcategories') \
-            .facet('keywords')
+        query = request.GET.get("q") or ":"
+        keyword_filters = request.GET.getlist("keyword")
+        resource_type_filters = request.GET.getlist("type")
+        min_year_filter = int(request.GET.get("minyear", 1000))
+        max_year_filter = int(request.GET.get("maxyear", MAXYEAR))
+        category_filters = request.GET.getlist("category")
+        sorting = request.GET.get("sort", "")
+        queryset = (
+            self.queryset.models(Resource)
+            .filter(content=Raw(query))
+            .filter(published__year__range=[min_year_filter, max_year_filter])
+            .highlight()
+            .facet("newcategories")
+            .facet("keywords")
+        )
         if keyword_filters:
             queryset = queryset.filter(keywords__in=keyword_filters)
         if resource_type_filters:
             queryset = queryset.filter(resource_type__in=resource_type_filters)
         if category_filters:
             queryset = queryset.filter(newcategories__in=category_filters)
-        if queryset and sorting.strip('-') in queryset[0]._additional_fields:
+        if queryset and sorting.strip("-") in queryset[0]._additional_fields:
             queryset = queryset.order_by(sorting)
         return queryset
-    
+
     @property
     def facet_fields(self):
-        facet_names = [
-            'resource_type', 
-            'year_published', 
-            'newcategories', 
-            'keywords'
-        ]
+        facet_names = ["resource_type", "year_published", "newcategories", "keywords"]
         return {
             name: sorting.FieldFacet(name, allow_overlap=True, maptype=sorting.Count)
             for name in facet_names
@@ -98,15 +94,15 @@ class SearchViewSet(viewsets.GenericViewSet):
         results = searcher.search(query, groupedby=self.facet_fields)
         facet_counts = {name: results.groups(name) for name in results.facet_names()}
         categories_tree = [
-            self._format_categories_list(category, facet_counts['newcategories'])
+            self._format_categories_list(category, facet_counts["newcategories"])
             for category in NewCategory.objects.filter(level=0)
         ]
         return {
-            'categories_list': categories_tree,
-            'resource_type_list': filter(bool, facet_counts['resource_type'].keys()),
-            'published_list': filter(bool, facet_counts['year_published'].keys()),
+            "categories_list": categories_tree,
+            "resource_type_list": filter(bool, facet_counts["resource_type"].keys()),
+            "published_list": filter(bool, facet_counts["year_published"].keys()),
             # Keywords are currently not displayed in the frontend anyway
-            'keywords_list': []  # filter(bool, facet_counts['keywords'].keys()),
+            "keywords_list": [],  # filter(bool, facet_counts['keywords'].keys()),
         }
 
     def _format_categories_list(self, category, facet_counts):
@@ -114,18 +110,13 @@ class SearchViewSet(viewsets.GenericViewSet):
             return {
                 "name": category.name,
                 "children": [],
-                "resource_count": facet_counts.get(category.name, 0)
+                "resource_count": facet_counts.get(category.name, 0),
             }
         children = [
-            self._format_categories_list(child, facet_counts)
-            for child in category.get_children()
+            self._format_categories_list(child, facet_counts) for child in category.get_children()
         ]
-        resource_count = sum(child['resource_count'] for child in children)
-        return {
-            "name": category.name,
-            "children": children,
-            "resource_count": resource_count
-        }
+        resource_count = sum(child["resource_count"] for child in children)
+        return {"name": category.name, "children": children, "resource_count": resource_count}
 
 
 class SuggestViewSet(viewsets.GenericViewSet):
@@ -142,19 +133,31 @@ class SuggestViewSet(viewsets.GenericViewSet):
         already typed and four search fields, title, subtitle, author name,
         and keywords.
         """
-        search_text = (request.GET.get('q', '')).strip()
+        search_text = (request.GET.get("q", "")).strip()
         if search_text:
-            sq1 = [{'value': result.title, 'field': 'title'} for result
-                   in SearchQuerySet().models(Resource).autocomplete(title_auto=search_text)]
-            sq2 = [{'value': result.subtitle, 'field': 'subtitle'} for result
-                   in SearchQuerySet().models(Resource).autocomplete(subtitle_auto=search_text)]
-            sq3 = [{'value': result.name, 'field': 'author'} for result
-                   in SearchQuerySet().models(Person).autocomplete(name_auto=search_text)]
-            sq4 = [{'value': result.keyword, 'field': 'keyword'} for result
-                   in SearchQuerySet().models(Keyword).autocomplete(keyword_auto=search_text)]
+            sq1 = [
+                {"value": result.title, "field": "title"}
+                for result in SearchQuerySet().models(Resource).autocomplete(title_auto=search_text)
+            ]
+            sq2 = [
+                {"value": result.subtitle, "field": "subtitle"}
+                for result in SearchQuerySet()
+                .models(Resource)
+                .autocomplete(subtitle_auto=search_text)
+            ]
+            sq3 = [
+                {"value": result.name, "field": "author"}
+                for result in SearchQuerySet().models(Person).autocomplete(name_auto=search_text)
+            ]
+            sq4 = [
+                {"value": result.keyword, "field": "keyword"}
+                for result in SearchQuerySet()
+                .models(Keyword)
+                .autocomplete(keyword_auto=search_text)
+            ]
             results = sq1 + sq2 + sq3 + sq4
         else:
             results = []
         page = self.paginate_queryset(results)
-        serializer = SuggestSerializer(page, many=True, context={'request': request})
+        serializer = SuggestSerializer(page, many=True, context={"request": request})
         return self.get_paginated_response(serializer.data)

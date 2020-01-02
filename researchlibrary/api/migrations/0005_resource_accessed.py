@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0004_auto_20160516_1330'),
-    ]
+    dependencies = [("api", "0004_auto_20160516_1330")]
 
     operations = [
         migrations.AddField(
-            model_name='resource',
-            name='accessed',
-            field=models.DateField(blank=True, null=True, verbose_name='date accessed'),
-        ),
+            model_name="resource",
+            name="accessed",
+            field=models.DateField(blank=True, null=True, verbose_name="date accessed"),
+        )
     ]

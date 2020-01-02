@@ -17,6 +17,7 @@ class Person(models.Model):
     The only property of persons are their names, so they can be
     created on the fly when resources are added.
     """
+
     name = models.CharField(max_length=100, unique=True)
 
     def __unicode__(self):
@@ -26,45 +27,45 @@ class Person(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = 'people'
+        verbose_name_plural = "people"
 
 
 class Category(models.Model):
     """
     The category of a resource.
     """
+
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'category (old)'
-        verbose_name_plural = 'categories (old)'
+        verbose_name = "category (old)"
+        verbose_name_plural = "categories (old)"
 
 
 class NewCategory(MPTTModel):
     """
     The category of a resource, using mptt for tree management
     """
+
     name = models.CharField(max_length=50, unique=True)
-    parent = TreeForeignKey(
-        'self',
-        null=True, blank=True,
-        related_name='children', db_index=True)
+    parent = TreeForeignKey("self", null=True, blank=True, related_name="children", db_index=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'category'
-        verbose_name_plural = 'categories'
+        verbose_name = "category"
+        verbose_name_plural = "categories"
 
 
 class Keyword(models.Model):
     """
     The keywords associated with a resource.
     """
+
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -113,30 +114,34 @@ class Resource(models.Model):
     series = models.CharField(max_length=300, blank=True)
     edition = models.CharField(max_length=300, blank=True)
     sourcetype = models.CharField(
-        max_length=30, choices=SOURCETYPE_CHOICES, blank=True,
-        help_text='The type of the source, e.g., “book” for a book chapter.')
+        max_length=30,
+        choices=SOURCETYPE_CHOICES,
+        blank=True,
+        help_text="The type of the source, e.g., “book” for a book chapter.",
+    )
 
     def clean(self):
         if self.published and self.published > datetime.date.today():
-            raise ValidationError('The entered published date is invalid.')
+            raise ValidationError("The entered publication date is invalid.")
         if self.startpage and self.endpage and self.startpage > self.endpage:
-            raise ValidationError('The entered pagenumbers are invalid.')
+            raise ValidationError("The entered page numbers are invalid.")
 
     def __str__(self):
         return self.title
 
     def pages(self):
         if self.startpage and self.endpage:
-            return '{}–{}'.format(self.startpage, self.endpage)
+            return "{}–{}".format(self.startpage, self.endpage)
         elif self.startpage or self.endpage:
             return str(self.startpage or self.endpage)
 
     def get_absolute_url(self):
-        return '/resources/%i/' % self.id
+        return "/resources/%i/" % self.id
 
     class Meta:
-        ordering = ['-published', 'title']
-        get_latest_by = 'published'
+        ordering = ["-published", "title"]
+        get_latest_by = "published"
+
 
 Resource.authors.through.person.field.remote_field.on_delete = models.PROTECT
 Resource.editors.through.person.field.remote_field.on_delete = models.PROTECT

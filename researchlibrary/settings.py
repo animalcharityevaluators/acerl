@@ -113,27 +113,19 @@ DATABASES = {
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -145,54 +137,31 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_ROOT = 'static/'
-STATIC_URL = '/static/'
-
-HAYSTACK_ITERATOR_LOAD_PER_QUERY = 100
+STATIC_ROOT = "static/"
+STATIC_URL = "/static/"
 
 LOGGING = {
-    'version': 1,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(name)s:%(funcName)s: %(message)s'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
+    "version": 1,
+    "formatters": {
+        "verbose": {"format": "%(levelname)s %(asctime)s %(name)s:%(funcName)s: %(message)s"},
+        "simple": {"format": "%(levelname)s %(message)s"},
     },
-    'handlers': {
-        'null': {
-            'level':'DEBUG',
-            'class':'logging.NullHandler',
+    "handlers": {
+        "null": {"level": "DEBUG", "class": "logging.NullHandler"},
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "level": "ERROR",
+            "formatter": "verbose",
+            "filters": ["require_debug_false"],
         },
-        'mail_admins': {
-            'class': 'django.utils.log.AdminEmailHandler',
-            'level': 'ERROR',
-            'formatter': 'verbose',
-            'filters': ['require_debug_false'],
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
+        "console": {"level": "INFO", "class": "logging.StreamHandler", "formatter": "verbose"},
     },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        },
-        'django.request': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'WARNING',
-        },
-        'gunicorn': {}  # Reset some nonpropagating default or whatever
+    "loggers": {
+        "": {"handlers": ["console"], "level": "INFO"},
+        "django.request": {"handlers": ["console", "mail_admins"], "level": "WARNING"},
+        "gunicorn": {},  # Reset some nonpropagating default or whatever
     },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
+    "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
 }
 
 DATE_EXTENSIONS_OUTPUT_FORMAT_DAY_MONTH_YEAR = "Y-m-d"

@@ -7,19 +7,24 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0012_auto_20160702_1500'),
-    ]
+    dependencies = [("api", "0012_auto_20160702_1500")]
 
     operations = [
         migrations.AlterField(
-            model_name='resource',
-            name='accessed',
-            field=models.DateField(blank=True, help_text='ISO 8601 format, e.g., 1806-05-20.', null=True, verbose_name='date accessed'),
+            model_name="resource",
+            name="accessed",
+            field=models.DateField(
+                blank=True,
+                help_text="ISO 8601 format, e.g., 1806-05-20.",
+                null=True,
+                verbose_name="date accessed",
+            ),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='published',
-            field=models.DateField(help_text='ISO 8601 format, e.g., 1946-07-06.', verbose_name='date published'),
+            model_name="resource",
+            name="published",
+            field=models.DateField(
+                help_text="ISO 8601 format, e.g., 1946-07-06.", verbose_name="date published"
+            ),
         ),
     ]
