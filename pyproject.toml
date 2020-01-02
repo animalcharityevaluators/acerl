@@ -40,6 +40,7 @@ django-extensions = "1.6.1"
 ipython = "^7.5"
 isort = {version = "^4.3", allow-prereleases = true}
 ptyprocess = "^0.6.0"
+pylint = "^2.4.4"
 
 [tool.black]
 line-length = 100
