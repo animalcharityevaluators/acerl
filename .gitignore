@@ -29,7 +29,6 @@ __pycache__
 docs/Makefile
 /whoosh_index/
 .idea/*
-/researchlibrary/api/migrations/*
 solr-4.10.2
 solr
 solr*.tgz
