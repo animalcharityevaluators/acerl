@@ -6,16 +6,19 @@ module defines the indices.
 """
 
 from haystack import indexes
-from whoosh.analysis import KeywordAnalyzer, IDTokenizer
-from .fields import AnalyzerCharField
+from whoosh.analysis import IDTokenizer
+
 from ..models import Keyword, Person, Resource
+from .fields import AnalyzerCharField
 
 
 class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(
         document=True, use_template=True, template_name="search/indexes/api/resource_text.txt"
     )
-    published = indexes.DateField(model_attr="published", null=True)
+    published = AnalyzerCharField(
+        model_attr="published", null=True, analyzer=IDTokenizer(), indexed=False
+    )
     abstract = indexes.CharField(model_attr="abstract", null=True, indexed=False)
     review = indexes.CharField(model_attr="review", null=True, indexed=False)
     publisher = AnalyzerCharField(
@@ -56,6 +59,9 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
 
     def index_queryset(self, using=None):
         return self.get_model().objects.all()
+
+    def prepare_published(self, obj):
+        return str(obj.published)
 
     def prepare_categories(self, obj):
         return list(obj.categories.all())

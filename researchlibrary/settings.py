@@ -163,7 +163,3 @@ LOGGING = {
     },
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
 }
-
-DATE_EXTENSIONS_OUTPUT_FORMAT_DAY_MONTH_YEAR = "Y-m-d"
-DATE_EXTENSIONS_OUTPUT_FORMAT_MONTH_YEAR = "Y-m"
-DATE_EXTENSIONS_OUTPUT_FORMAT_YEAR = "Y"

@@ -4,10 +4,10 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django_date_extensions.fields import ApproximateDateField
 from mptt.fields import TreeManyToManyField
 from mptt.models import MPTTModel, TreeForeignKey
 
+from .fields import ApproximateDate, ApproximateDateField
 from .models_choices import RESOURCE_TYPE_CHOICES, SOURCETYPE_CHOICES
 
 
@@ -85,9 +85,7 @@ class Resource(models.Model):
     authors = models.ManyToManyField(Person, related_name="resources_authored")
     title = models.CharField(max_length=300, unique=True)
     published = ApproximateDateField(
-        "approx. publication date",
-        default="1000-01-01",
-        help_text="Formats YYYY-MM-DD, YYYY-MM, and YYYY.",
+        "publication date", default="1000-01-01", help_text="Formats YYYY-MM-DD, YYYY-MM, and YYYY."
     )
     resource_type = models.CharField(max_length=30, choices=RESOURCE_TYPE_CHOICES, blank=True)
 
@@ -121,7 +119,7 @@ class Resource(models.Model):
     )
 
     def clean(self):
-        if self.published and self.published > datetime.date.today():
+        if self.published and self.published > datetime.date.today().isoformat():
             raise ValidationError("The entered publication date is invalid.")
         if self.startpage and self.endpage and self.startpage > self.endpage:
             raise ValidationError("The entered page numbers are invalid.")

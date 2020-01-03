@@ -130,7 +130,7 @@ class ResourceForm(ModelForm):
     class Meta:
         model = Resource
         fields = ["newcategories"]
-        widgets = {"approx_published": widgets.AdminDateWidget}
+        widgets = {"published": widgets.AdminDateWidget}
 
     def __init__(self, *args, **kwargs):
         super(ResourceForm, self).__init__(*args, **kwargs)
