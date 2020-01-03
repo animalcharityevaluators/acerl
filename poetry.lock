@@ -180,14 +180,6 @@ python-versions = "*"
 version = "2.0.2"
 
 [[package]]
-category = "main"
-description = "This code adds a few small extensions to Django's DateField, to handle both approximate dates (e.g. 'March 1963') and default year dates (e.g. assume '24th June' is the most recent such)."
-name = "django-date-extensions"
-optional = false
-python-versions = "*"
-version = "3.0"
-
-[[package]]
 category = "dev"
 description = "django-debug-toolbar in WebKit DevTools. Works fine with background Ajax requests and non-HTML responses"
 name = "django-debug-panel"
@@ -799,7 +791,7 @@ python-versions = "*"
 version = "1.11.2"
 
 [metadata]
-content-hash = "d54917413fe48281fc9364654c4755cca0090b04609784728c934c35817d2e83"
+content-hash = "8ca03d23f7701f831638eb1be65928c24669d99acbebc232cb1bbaee3128f3a6"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -870,10 +862,6 @@ django-compressor = [
 django-cors-headers = [
     {file = "django-cors-headers-2.0.2.tar.gz", hash = "sha256:a9613cfca9eca3b3f1b32fdd5c5bfac4cbc22d2e27e64f297cf2acd90aa72d76"},
     {file = "django_cors_headers-2.0.2-py2.py3-none-any.whl", hash = "sha256:2e79598fa9575ff378812bf72543aa87f1add228707e99c9625a845dda4317d9"},
-]
-django-date-extensions = [
-    {file = "django_date_extensions-3.0-py2.py3-none-any.whl", hash = "sha256:0b03fcf8038956bee3d819a3ac7ab72c6512590af0ef87c0202c6a3cc6e88025"},
-    {file = "django_date_extensions-3.0.tar.gz", hash = "sha256:10d7503544f215dad1d036d13407657d56885e96a43127b7581ecb9e61f85140"},
 ]
 django-debug-panel = [
     {file = "django-debug-panel-0.8.2.tar.gz", hash = "sha256:36740c072523fdfe61b829ad85d9381584f5295672e6cbffc34baac367903499"},
