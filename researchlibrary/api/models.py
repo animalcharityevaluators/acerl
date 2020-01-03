@@ -7,7 +7,7 @@ from django.db import models
 from mptt.fields import TreeManyToManyField
 from mptt.models import MPTTModel, TreeForeignKey
 
-from .fields import ApproximateDate, ApproximateDateField
+from .fields import ApproximateDateField
 from .models_choices import RESOURCE_TYPE_CHOICES, SOURCETYPE_CHOICES
 
 

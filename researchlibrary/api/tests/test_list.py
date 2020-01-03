@@ -1,7 +1,9 @@
 import datetime
+
+from django.core.management import call_command
 from django.test import TestCase
 from django.test.client import Client
-from django.core.management import call_command
+
 from ..models import Person, Resource
 
 

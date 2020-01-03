@@ -9,11 +9,12 @@ the purpose of augmenting the search index.
 """
 
 import logging
+
 import requests
 from django.core import management
-from ...models import Resource
-from ...admin import Gist
 
+from ...admin import Gist
+from ...models import Resource
 
 logger = logging.getLogger(__name__)
 

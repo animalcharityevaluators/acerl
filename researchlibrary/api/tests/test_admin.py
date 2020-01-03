@@ -1,12 +1,13 @@
 import datetime
 import os
 from unittest import skip
-from django.contrib.auth.models import User
-from django.test import TestCase
-from django.conf import settings
-from django.core.management import call_command
-from ..models import Person, Resource, Keyword
 
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.management import call_command
+from django.test import TestCase
+
+from ..models import Keyword, Person, Resource
 
 settings.HAYSTACK_CONNECTIONS["default"]["PATH"] = os.path.join(
     settings.BASE_DIR, "..", "test_whoosh_index"

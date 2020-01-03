@@ -79,7 +79,7 @@ class SearchSerializer(NonNullSerializer):
         for entry in instance:
             if isinstance(entry.published, datetime.datetime):
                 entry.published = entry.published.date()
-        return super().__init__(instance=instance, data=data, **kwargs)
+        super().__init__(instance=instance, data=data, **kwargs)
 
     def fetch_excerpt(self, obj):
         try:

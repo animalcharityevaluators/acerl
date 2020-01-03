@@ -1,9 +1,10 @@
 import logging
 from itertools import chain
+
 from django.db.models import signals
 from haystack.signals import BaseSignalProcessor
-from .models import Resource, Category, Keyword, Person
 
+from .models import Category, Keyword, Person, Resource
 
 logger = logging.getLogger(__name__)
 

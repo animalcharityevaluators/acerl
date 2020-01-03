@@ -1,6 +1,5 @@
 import logging
 
-from whoosh.analysis import StemmingAnalyzer
 from haystack.fields import CharField
 
 logger = logging.getLogger(__name__)

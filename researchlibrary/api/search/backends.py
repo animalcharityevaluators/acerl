@@ -2,18 +2,11 @@ import logging
 
 from haystack.backends.whoosh_backend import WhooshEngine, WhooshSearchBackend
 from haystack.constants import DJANGO_CT, DJANGO_ID, ID
-
-from whoosh import index
+from haystack.exceptions import SearchBackendError
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.fields import BOOLEAN, DATETIME
 from whoosh.fields import ID as WHOOSH_ID
 from whoosh.fields import IDLIST, KEYWORD, NGRAM, NGRAMWORDS, NUMERIC, TEXT, Schema
-from whoosh.filedb.filestore import FileStorage, RamStorage
-from whoosh.highlight import ContextFragmenter, HtmlFormatter
-from whoosh.highlight import highlight as whoosh_highlight
-from whoosh.qparser import FuzzyTermPlugin, QueryParser
-from whoosh.searching import ResultsPage
-from whoosh.writing import AsyncWriter
 
 logger = logging.getLogger(__name__)
 

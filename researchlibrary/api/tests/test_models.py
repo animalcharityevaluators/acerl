@@ -1,5 +1,6 @@
 from django.test import TestCase
-from ..models import Person, Resource, Keyword, Category
+
+from ..models import Category, Keyword, Person, Resource
 
 
 class ModelTests(TestCase):

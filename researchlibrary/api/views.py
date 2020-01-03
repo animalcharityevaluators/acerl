@@ -5,7 +5,7 @@ web browser for an overview of the available endpoints.
 """
 import logging
 from collections import defaultdict
-from datetime import datetime, timedelta, MAXYEAR
+from datetime import MAXYEAR, datetime, timedelta
 
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet

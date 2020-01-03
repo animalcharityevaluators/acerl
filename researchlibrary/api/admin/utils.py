@@ -1,9 +1,10 @@
 import re
-from haystack.forms import SearchForm
-from stop_words import get_stop_words
-from readability.readability import Document
-from utilofies.stdlib import cached_property
 import string
+
+from haystack.forms import SearchForm
+from readability.readability import Document
+from stop_words import get_stop_words
+from utilofies.stdlib import cached_property
 
 
 class Gist:

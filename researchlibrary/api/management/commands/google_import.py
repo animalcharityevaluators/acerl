@@ -6,12 +6,14 @@ database.
 """
 
 import logging
+
 import gspread
 from dateutil.parser import parse as parse_date
-from oauth2client.service_account import ServiceAccountCredentials
 from django.core import management
-from ...models import Person, Resource, Category, Keyword
+from oauth2client.service_account import ServiceAccountCredentials
+
 from ... import models_choices
+from ...models import Category, Keyword, Person, Resource
 
 SHEET = "Sheet1"
 
