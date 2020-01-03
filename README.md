@@ -7,27 +7,21 @@
 
 It should be sufficient to just run:
 
-    sudo aptitude install python3-dev libpq-dev g++ libxml2-dev libxslt1-dev
-    python3.4 bootstrap.py -c development.cfg
-    bin/buildout -c development.cfg
-
-To collect the default static files(.css, .js, ...)
-
-    bin/django collectstatic
-
-To setup the database:
-
-    sudo aptitude install postgresql postgresql-contrib
+    sudo aptitude install python3-dev libpq-dev g++ libxml2-dev libxslt1-dev postgresql postgresql-contrib
+    python3.7 -m pip install --user -U poetry
+    poetry install
     sudo -u postgres psql -f db_create.sql
-    bin/django migrate
+    poetry run ./manage.py migrate
+    poetry run ./manage.py collectstatic -l
+    poetry run ./manage.py update_index
 
-Please install [pylama, pyflakes, and pep8](https://pylama.readthedocs.io/) on your computer to make sure your code is well readable:
-
-    pylama -l pep8,pyflakes researchlibrary
+Please install PyLint and Black on your computer and in your code editor to make sure your code is well readable.
 
 ## Staging/Production Deployment
 
-Forthcoming.
+The same as above (on Debian-based systems), but you can call Poetry like so to avoid installing the dev dependencies:
+
+    poetry install --no-dev
 
 ## Starting the Server
 
@@ -41,7 +35,11 @@ Restart with:
 
 ## Tests
 
-    bin/django test researchlibrary
+    poetry run ./manage.py test researchlibrary
+
+The acerl user needs to have the `createdb` permission:
+
+    alter user acerl with createdb;
 
 ## Documentation
 
