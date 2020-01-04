@@ -27,7 +27,7 @@ class CustomWhooshSearchBackend(WhooshSearchBackend):
         for field_name, field_class in fields.items():
             if field_class.is_multivalued:
                 if field_class.indexed is False:
-                    schema_fields[field_class.index_fieldname] = IDLIST(
+                    schema_fields[field_class.index_fieldname] = WHOOSH_ID(
                         stored=True, field_boost=field_class.boost
                     )
                 else:

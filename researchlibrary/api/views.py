@@ -9,7 +9,7 @@ from datetime import MAXYEAR
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
 from rest_framework import viewsets
-from whoosh import sorting
+from whoosh.sorting import FieldFacet, Count
 
 from .models import Keyword, Category, Person, Resource
 from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
@@ -81,10 +81,7 @@ class SearchViewSet(viewsets.GenericViewSet):
     @property
     def facet_fields(self):
         facet_names = ["resource_type", "year_published", "categories", "keywords"]
-        return {
-            name: sorting.FieldFacet(name, allow_overlap=True, maptype=sorting.Count)
-            for name in facet_names
-        }
+        return {name: FieldFacet(name, allow_overlap=True, maptype=Count) for name in facet_names}
 
     def _get_facets(self, queryset):
         whoosh = queryset.query.backend
