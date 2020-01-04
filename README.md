@@ -27,11 +27,11 @@ The same as above (on Debian-based systems), but you can call Poetry like so to 
 
 This project uses [Supervisor](https://pypi.python.org/pypi/supervisor). Start the server with:
 
-    supervisord
+    poetry run supervisord -c supervisord.conf
 
 Restart with:
 
-    supervisorctl restart all
+    poetry run supervisorctl restart all
 
 ## Tests
 
