@@ -26,12 +26,36 @@ class SearchTests(TestCase):
     def setUpTestData(cls):
         author = Person.objects.create(name="Mock Author")
         category = Category.objects.create(name="Mock Category")
-        Resource.objects.create(title="Mock Turtle", published=datetime.date.today())
-        Resource.objects.create(title="Mock Chicken", published=datetime.date.today())
-        Resource.objects.create(title="Mock Cow", published=datetime.date.today())
-        Resource.objects.create(title="Mock Pig", published=datetime.date.today())
-        Resource.objects.create(title="Mock Piglet", published=datetime.date.today())
-        Resource.objects.create(title="Mock Turkey", published=datetime.date(1994, 10, 19))
+        Resource.objects.create(
+            title="Mock Turtle",
+            abstract="A little summary of the mock content.",
+            published=datetime.date.today(),
+        )
+        Resource.objects.create(
+            title="Mock Chicken",
+            abstract="A little summary of the mock content.",
+            published=datetime.date.today(),
+        )
+        Resource.objects.create(
+            title="Mock Cow",
+            abstract="A little summary of the mock content.",
+            published=datetime.date.today(),
+        )
+        Resource.objects.create(
+            title="Mock Pig",
+            abstract="A little summary of the mock content.",
+            published=datetime.date.today(),
+        )
+        Resource.objects.create(
+            title="Mock Piglet",
+            abstract="A little summary of the mock content.",
+            published=datetime.date.today(),
+        )
+        Resource.objects.create(
+            title="Mock Turkey",
+            abstract="A little summary of the mock content.",
+            published=datetime.date(1994, 10, 19),
+        )
         resources = list(Resource.objects.all())
         author.resources_authored.add(*resources)
         category.resources.add(*resources[:5])

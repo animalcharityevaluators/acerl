@@ -86,7 +86,12 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
         return obj.get_resource_type_display()
 
     def prepare_year_published(self, obj):
-        return obj.published.year if obj.published else None
+        if not obj.published:
+            return None
+        if isinstance(obj.published, str):
+            # Why does this keep happening in the tests?
+            return ApproximateDateField.from_db_value(None, obj.published).year
+        return obj.published.year
 
 
 class PersonIndex(indexes.SearchIndex, indexes.Indexable):
