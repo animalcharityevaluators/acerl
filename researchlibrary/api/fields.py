@@ -37,24 +37,27 @@ class ApproximateDateField(models.CharField):
         return name, path, args, kwargs
 
     def to_python(self, value):
-        if isinstance(value, ApproximateDate):
-            return value
         return self.from_db_value(value)
 
     def from_db_value(self, value, expression=None, connection=None, context=None):
-        value = value.strip()
-        if value in (None, ""):
-            return ""
-        if approx_date_re.search(value):
-            value = value + "0000-00-00"[len(value) :]
-        year, month, day = map(int, value.split("-"))
+        if not value:
+            return None
+        if isinstance(value, ApproximateDate):
+            return value
+        if isinstance(value, datetime.date):
+            year, month, day = value.year, value.month, value.day
+        if isinstance(value, str):
+            if not approx_date_re.search(value):
+                raise ValidationError("Enter a valid date in YYYY-MM-DD, YYYY-MM, or YYYY format.")
+            value += "0000-00-00"[len(value) :]
+            year, month, day = map(int, value.split("-"))
         try:
             return ApproximateDate(year, month, day)
         except ValueError as exception:
             raise ValidationError(f"Invalid date: {exception}")
 
     def get_prep_value(self, value):
-        if value in (None, ""):
+        if not value:
             return ""
         if isinstance(value, ApproximateDate):
             return str(value)
@@ -65,7 +68,7 @@ class ApproximateDateField(models.CharField):
         raise ValidationError("Enter a valid date in YYYY-MM-DD, YYYY-MM, or YYYY format.")
 
     def value_to_string(self, obj):
-        value = self._get_val_from_obj(obj)
+        value = self.value_from_object(obj)
         return self.get_prep_value(value)
 
     def formfield(self, **kwargs):

@@ -4,13 +4,15 @@ The Acerl API allows indexed searches over the content of resources
 (e.g., papers, books, blog posts) as well as several meta data. This
 module defines the indices.
 """
-
+import logging
 from haystack import indexes
 from whoosh.analysis import IDTokenizer
 
-from ..fields import ApproximateDateField
+from ..fields import ApproximateDateField, ApproximateDate
 from ..models import Keyword, Person, Resource
 from .fields import AnalyzerCharField
+
+logger = logging.getLogger(__name__)
 
 
 class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
@@ -88,8 +90,10 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_year_published(self, obj):
         if not obj.published:
             return None
-        if isinstance(obj.published, str):
-            # Why does this keep happening in the tests?
+        if not hasattr(obj.published, "year"):
+            # When a resources is created with a date in some other compatible format,
+            # the indexing is called with the in-memory object before it has been refetched
+            # from the database. So this field hasn’t been converted to an ApproximateDate.
             return ApproximateDateField.from_db_value(None, obj.published).year
         return obj.published.year
 
