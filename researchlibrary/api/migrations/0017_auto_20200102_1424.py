@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-import django_date_extensions.fields
 
 
 class Migration(migrations.Migration):

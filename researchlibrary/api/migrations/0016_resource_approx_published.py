@@ -3,7 +3,8 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-import django_date_extensions.fields
+
+from .. import fields
 
 
 def migrate_published(apps, schema_editor):
@@ -21,7 +22,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="resource",
             name="approx_published",
-            field=django_date_extensions.fields.ApproximateDateField(
+            field=fields.ApproximateDateField(
                 default="1000-01-01",
                 help_text="Formats YYYY-MM-DD, YYYY-MM, and YYYY.",
                 verbose_name="approx. publication date",

@@ -8,6 +8,7 @@ module defines the indices.
 from haystack import indexes
 from whoosh.analysis import IDTokenizer
 
+from ..fields import ApproximateDateField
 from ..models import Keyword, Person, Resource
 from .fields import AnalyzerCharField
 
