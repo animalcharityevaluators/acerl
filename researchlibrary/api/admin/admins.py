@@ -9,7 +9,7 @@ from django.forms import ModelForm
 from django.utils.html import format_html
 from mptt.admin import DraggableMPTTAdmin
 
-from ..models import Category, Keyword, NewCategory, Person, Resource
+from ..models import Category, Keyword, Person, Resource
 from .utils import Gist
 
 
@@ -54,28 +54,12 @@ class EditorUsageCountListFilter(UsageCountListFilter):
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ["name", "usage_count"]
-    list_filter = [UsageCountListFilter]
-    search_fields = ["name"]
-
-    def get_queryset(self, request):
-        return Category.objects.annotate(cat_count=Count("resources"))
-
-    def usage_count(self, obj):
-        return obj.resources.count()
-
-    usage_count.short_description = "Usage Count"
-    usage_count.admin_order_field = "cat_count"
-
-
-@admin.register(NewCategory)
-class NewCategoryAdmin(DraggableMPTTAdmin):
+class CategoryAdmin(DraggableMPTTAdmin):
     list_display = ("tree_actions", "indented_title", "usage_count")
     list_display_links = ("indented_title",)
 
     def get_queryset(self, request):
-        return NewCategory.objects.annotate(cat_count=Count("resources"))
+        return Category.objects.annotate(cat_count=Count("resources"))
 
     def usage_count(self, obj):
         return obj.resources.count() if obj.is_leaf_node() else None
@@ -129,16 +113,16 @@ class PersonAdmin(admin.ModelAdmin):
 class ResourceForm(ModelForm):
     class Meta:
         model = Resource
-        fields = ["newcategories"]
+        fields = ["categories"]
         widgets = {"published": widgets.AdminDateWidget}
 
     def __init__(self, *args, **kwargs):
         super(ResourceForm, self).__init__(*args, **kwargs)
-        if NewCategory.objects.all():
-            all_categories = NewCategory.objects.all()
+        if Category.objects.all():
+            all_categories = Category.objects.all()
             leaf_ids = [c.id for c in all_categories if c.is_leaf_node()]
             leaf_qs = all_categories.filter(id__in=leaf_ids)
-            self.fields["newcategories"].queryset = leaf_qs
+            self.fields["categories"].queryset = leaf_qs
 
 
 @admin.register(Resource)
@@ -159,8 +143,8 @@ class ResourceAdmin(admin.ModelAdmin):
         "edition",
         "sourcetype",
     ]
-    list_filter = ["resource_type", "categories", "newcategories", "sourcetype", "keywords"]
-    filter_horizontal = ["authors", "editors", "keywords", "categories", "newcategories"]
+    list_filter = ["resource_type", "categories", "sourcetype", "keywords"]
+    filter_horizontal = ["authors", "editors", "keywords", "categories"]
     fieldsets = (
         (
             "Main Fields",
@@ -176,7 +160,6 @@ class ResourceAdmin(admin.ModelAdmin):
                     "fulltext_url",
                     "resource_type",
                     "categories",
-                    "newcategories",
                 )
             },
         ),

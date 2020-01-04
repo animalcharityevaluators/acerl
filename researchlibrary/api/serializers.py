@@ -72,7 +72,6 @@ class SearchSerializer(NonNullSerializer):
     authors = serializers.StringRelatedField(many=True)
     editors = serializers.StringRelatedField(many=True)
     categories = serializers.StringRelatedField(many=True)
-    newcategories = serializers.StringRelatedField(many=True)
     excerpt = serializers.SerializerMethodField("fetch_excerpt")
 
     def __init__(self, instance=None, data=serializers.empty, **kwargs):
@@ -107,7 +106,6 @@ class SearchSerializer(NonNullSerializer):
             "fulltext_url",
             "resource_type",
             "categories",
-            "newcategories",
             "excerpt",
             "review",
         )

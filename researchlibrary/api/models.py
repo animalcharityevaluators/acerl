@@ -30,22 +30,7 @@ class Person(models.Model):
         verbose_name_plural = "people"
 
 
-class Category(models.Model):
-    """
-    The category of a resource.
-    """
-
-    name = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "category (old)"
-        verbose_name_plural = "categories (old)"
-
-
-class NewCategory(MPTTModel):
+class Category(MPTTModel):
     """
     The category of a resource, using mptt for tree management
     """
@@ -95,8 +80,7 @@ class Resource(models.Model):
     )
     url = models.URLField(max_length=2000, blank=True, verbose_name="URL")
     fulltext_url = models.URLField(max_length=2000, blank=True, verbose_name="fulltext URL")
-    categories = models.ManyToManyField(Category, related_name="resources", blank=True)
-    newcategories = TreeManyToManyField(NewCategory, related_name="resources", blank=True)
+    categories = TreeManyToManyField(Category, related_name="resources", blank=True)
     keywords = models.ManyToManyField(Keyword, related_name="resources", blank=True)
     editors = models.ManyToManyField(Person, related_name="resources_edited", blank=True)
     publisher = models.CharField(max_length=300, blank=True)

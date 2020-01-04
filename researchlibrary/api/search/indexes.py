@@ -8,7 +8,7 @@ import logging
 from haystack import indexes
 from whoosh.analysis import IDTokenizer
 
-from ..fields import ApproximateDateField, ApproximateDate
+from ..fields import ApproximateDateField
 from ..models import Keyword, Person, Resource
 from .fields import AnalyzerCharField
 
@@ -68,9 +68,6 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare_categories(self, obj):
         return list(obj.categories.all())
-
-    def prepare_newcategories(self, obj):
-        return list(obj.newcategories.all())
 
     def prepare_authors(self, obj):
         return list(obj.authors.all())

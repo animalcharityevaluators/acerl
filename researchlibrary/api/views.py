@@ -4,15 +4,14 @@ The Acerl API is self-documenting. Call the API base URL in a
 web browser for an overview of the available endpoints.
 """
 import logging
-from collections import defaultdict
-from datetime import MAXYEAR, datetime, timedelta
+from datetime import MAXYEAR
 
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
 from rest_framework import viewsets
 from whoosh import sorting
 
-from .models import Keyword, NewCategory, Person, Resource
+from .models import Keyword, Category, Person, Resource
 from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
 
 logger = logging.getLogger("debugging")
@@ -66,7 +65,7 @@ class SearchViewSet(viewsets.GenericViewSet):
             .filter(content=Raw(query))
             .filter(published__year__range=[min_year_filter, max_year_filter])
             .highlight()
-            .facet("newcategories")
+            .facet("categories")
             .facet("keywords")
         )
         if keyword_filters:
@@ -74,14 +73,14 @@ class SearchViewSet(viewsets.GenericViewSet):
         if resource_type_filters:
             queryset = queryset.filter(resource_type__in=resource_type_filters)
         if category_filters:
-            queryset = queryset.filter(newcategories__in=category_filters)
+            queryset = queryset.filter(categories__in=category_filters)
         if queryset and sorting.strip("-") in queryset[0]._additional_fields:
             queryset = queryset.order_by(sorting)
         return queryset
 
     @property
     def facet_fields(self):
-        facet_names = ["resource_type", "year_published", "newcategories", "keywords"]
+        facet_names = ["resource_type", "year_published", "categories", "keywords"]
         return {
             name: sorting.FieldFacet(name, allow_overlap=True, maptype=sorting.Count)
             for name in facet_names
@@ -94,8 +93,8 @@ class SearchViewSet(viewsets.GenericViewSet):
         results = searcher.search(query, groupedby=self.facet_fields)
         facet_counts = {name: results.groups(name) for name in results.facet_names()}
         categories_tree = [
-            self._format_categories_list(category, facet_counts["newcategories"])
-            for category in NewCategory.objects.filter(level=0)
+            self._format_categories_list(category, facet_counts["categories"])
+            for category in Category.objects.filter(level=0)
         ]
         return {
             "categories_list": categories_tree,
