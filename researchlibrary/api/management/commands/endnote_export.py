@@ -24,7 +24,7 @@ class Command(management.base.BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("path", help="Path for files")
 
-    def format(self, resource):
+    def format_resource(self, resource):
         return prune(
             {
                 "ref-type": {"@name": resource.resource_type},
@@ -56,15 +56,22 @@ class Command(management.base.BaseCommand):
             }
         )
 
+    def format_resources(self, resources):
+        database = {"xml": {"records": {"record": map(self.format_resource, resources)}}}
+        return xmltodict.unparse(database, pretty=True)
+
     def handle(self, *args, **options):
         for category in Category.objects.all():
             resources = Resource.objects.filter(categories__id=category.id)
             if resources:
-                database = {"xml": {"records": {"record": map(self.format, resources)}}}
-                xml = xmltodict.unparse(database, pretty=True)
                 filename = (
                     f"{options['path']}/{slugify(category.name)}"
                     f".{datetime.utcnow().isoformat('T')}.xml"
                 )
                 with open(filename, "w") as xmlfile:
-                    xmlfile.write(xml)
+                    xmlfile.write(self.format_resources(resources))
+        resources = Resource.objects.filter(categories__isnull=True)
+        if resources:
+            filename = f"{options['path']}/no-category.{datetime.utcnow().isoformat('T')}.xml"
+            with open(filename, "w") as xmlfile:
+                xmlfile.write(self.format_resources(resources))
