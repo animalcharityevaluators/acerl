@@ -68,7 +68,6 @@ class Command(management.base.BaseCommand):
         subtitle = ""
         if re.search(r" – |: ", title):
             title, subtitle = re.split(r" – |: ", title, 1)
-        print(repr(title), repr(subtitle))
         authors = [
             Person.objects.get_or_create(name=author_name.strip())[0]
             for author_name in author_names.split(";")
