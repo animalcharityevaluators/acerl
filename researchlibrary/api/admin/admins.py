@@ -130,7 +130,13 @@ class ResourceAdmin(admin.ModelAdmin):
     form = ResourceForm
     change_list_template = "api/change_list.html"
     change_form_template = "api/change_form.html"
-    list_display = ["augmented_title", "concatenated_authors", "published", "resource_type"]
+    list_display = [
+        "augmented_title",
+        "concatenated_authors",
+        "published",
+        "created",
+        "resource_type",
+    ]
     search_fields = [
         "title",
         "authors__name",
@@ -143,7 +149,7 @@ class ResourceAdmin(admin.ModelAdmin):
         "edition",
         "sourcetype",
     ]
-    list_filter = ["resource_type", "categories", "sourcetype", "keywords"]
+    list_filter = ["resource_type", "categories", "sourcetype"]
     filter_horizontal = ["authors", "editors", "keywords", "categories"]
     fieldsets = (
         (

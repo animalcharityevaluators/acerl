@@ -1,7 +1,8 @@
 """Acerl API model definitions"""
 
-import datetime
+from datetime import date
 
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
 from mptt.fields import TreeManyToManyField
@@ -68,7 +69,7 @@ class Resource(models.Model):
 
     # Mandatory fields
     authors = models.ManyToManyField(Person, related_name="resources_authored")
-    title = models.CharField(max_length=300, unique=True)
+    title = models.CharField(max_length=300)
     published = ApproximateDateField(
         "publication date", default="1000-01-01", help_text="Formats YYYY-MM-DD, YYYY-MM, and YYYY."
     )
@@ -101,9 +102,11 @@ class Resource(models.Model):
         blank=True,
         help_text="The type of the source, e.g., “book” for a book chapter.",
     )
+    created = models.DateTimeField(auto_now_add=True)
+    misc = JSONField(default=dict, blank=True)
 
     def clean(self):
-        if self.published and self.published > datetime.date.today().isoformat():
+        if self.published and self.published > date.today().isoformat():
             raise ValidationError("The entered publication date is invalid.")
         if self.startpage and self.endpage and self.startpage > self.endpage:
             raise ValidationError("The entered page numbers are invalid.")
