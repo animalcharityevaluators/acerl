@@ -6,6 +6,7 @@ database.
 """
 
 import logging
+import re
 
 import gspread
 from dateutil.parser import parse as parse_date
@@ -14,8 +15,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from ... import models_choices
 from ...models import Category, Keyword, Person, Resource
-
-SHEET = "Sheet1"
 
 
 logger = logging.getLogger(__name__)
@@ -34,50 +33,83 @@ class Command(management.base.BaseCommand):
                 " email address from the credentials)"
             ),
         )
+        parser.add_argument("sheet", help="Title of the sheet")
 
     def process(self, row):
-        _, author_names, editor_names, published, publisher, title, subtitle, url, resource_type, keyword_names, abstract, review, fulltext_url, category, discussion, journal, volume, number, startpage, endpage, series, edition, sourcetype = row[
-            :23
-        ]
-        if Resource.objects.filter(url=url).exists():
-            logger.info("Skipping existing entry %r", title)
+        (
+            status,
+            title,
+            url,
+            fulltext_url,
+            author_names,
+            published,
+            category_names,
+            resource_type,
+            keyword_names,
+            abstract,
+            review,
+            discussion,
+            # editor_names,
+            # publisher,
+            # subtitle,
+            # review,
+            # journal,
+            # volume,
+            # number,
+            # startpage,
+            # endpage,
+            # series,
+            # edition,
+            # sourcetype,
+        ) = row[:12]
+        if status != "Pending" or Resource.objects.filter(url=url).exists():
+            logger.info("Skipping entry %r", title)
             return
+        subtitle = ""
+        if re.search(r" – |: ", title):
+            title, subtitle = re.split(r" – |: ", title, 1)
+        print(repr(title), repr(subtitle))
         authors = [
             Person.objects.get_or_create(name=author_name.strip())[0]
-            for author_name in author_names.split(",")
+            for author_name in author_names.split(";")
             if author_name.strip()
         ]
-        editors = [
-            Person.objects.get_or_create(name=editor_name.strip())[0]
-            for editor_name in editor_names.split(",")
-            if editor_name.strip()
-        ]
         keywords = [
-            Keyword.objects.get_or_create(name=keyword_name.strip())[0]
-            for keyword_name in keyword_names.split(",")
+            Keyword.objects.get_or_create(name=keyword_name.strip().lower())[0]
+            for keyword_name in re.split(r",|;|\n|  ", keyword_names)
             if keyword_name.strip()
         ]
-        categories = Category.objects.get_or_create(name=category.strip())[:1]
+        categories = [
+            Category.objects.get(name=category_name.strip())
+            for category_name in re.split(r",|;|\n|  ", category_names)
+            if (
+                category_name.strip()
+                and Category.objects.filter(name=category_name.strip()).exists()
+            )
+        ]
         if discussion.strip():
             review += "\n\nDiscussion: {}".format(discussion)
-        published = parse_date(published)
-        accessed = parse_date("2015-11-03")
-        resource_type = {
-            "Academic Paper": models_choices.STUDY,
-            "Academic Paper (Unpublished)": models_choices.STUDY,
-            "Blog Post": models_choices.BLOG_ARTICLE,
-            "Book": models_choices.BOOK,
-            "Historical Document": models_choices.HISTORICAL_DOCUMENT,
-            "Industry Publication": models_choices.RESEARCH_SUMMARY,
-            "Newspaper opinion piece": models_choices.OPINION_PIECE,
-            "Research Summary": models_choices.RESEARCH_SUMMARY,
-            "Wikipedia Entry": models_choices.ENCYCLOPEDIA_ARTICLE,
-            "": models_choices.OTHER,
-        }[resource_type]
+        resource_type = dict(
+            {value.lower(): key for key, value in models_choices.RESOURCE_TYPE_CHOICES},
+            **{
+                "book": models_choices.BOOK,
+                "industry publication": models_choices.RESEARCH_SUMMARY,
+                "wikipedia entry": models_choices.ENCYCLOPEDIA_ARTICLE,
+                "study report": models_choices.STUDY_REPORT,
+                "other (chapter)": models_choices.OTHER,
+                "other (proceedings)": models_choices.OTHER,
+                "other—survey data": models_choices.OTHER,
+                "": models_choices.OTHER,
+            }
+        )[resource_type.lower()]
+        if not re.match(r"^\d{4}(-\d{2})?(-\d{2})?$", published):
+            year = re.search(r"\d{4}", published)
+            if year:
+                published = year.group(0)
+            else:
+                published = None
         resource = Resource(
             published=published,
-            accessed=accessed,
-            publisher=publisher.strip(),
             title=title.strip(),
             subtitle=subtitle.strip(),
             url=url.strip(),
@@ -85,20 +117,11 @@ class Command(management.base.BaseCommand):
             resource_type=resource_type,
             abstract=abstract.strip(),
             review=review.strip(),
-            journal=journal.strip(),
-            volume=int(volume.strip()) if volume.strip() else None,
-            number=int(number.strip()) if number.strip() else None,
-            startpage=int(startpage.strip()) if startpage.strip() else None,
-            endpage=int(endpage.strip()) if endpage.strip() else None,
-            series=series.strip(),
-            edition=edition.strip(),
-            sourcetype=sourcetype.strip(),
         )
         resource.save()
         resource.authors = authors
-        resource.editors = editors
         resource.keywords = keywords
-        resource.categories = categories
+        resource.categories.add(*categories)
         resource.save()
 
     def handle(self, *args, **options):
@@ -108,7 +131,7 @@ class Command(management.base.BaseCommand):
         )
         gc = gspread.authorize(credentials)
         doc = gc.open_by_key(options["id"])
-        worksheet = doc.worksheet(SHEET).get_all_values()
+        worksheet = doc.worksheet(options["sheet"]).get_all_values()
         for row in worksheet:
             if row[1] == "Author":
                 continue
