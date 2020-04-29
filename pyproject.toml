@@ -33,6 +33,7 @@ utilofies = "2.2.1"
 Whoosh = "^2.7.4"
 supervisor = "^4.1.0"
 xmltodict = "^0.12.0"
+django-environ = "^0.4.5"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^18.3-alpha.0", allow-prereleases = true}

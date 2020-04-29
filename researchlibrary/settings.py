@@ -11,15 +11,20 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 import os
 
+import environ
+
+env = environ.Env()
+env.read_env(".env")
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "rw_s2c!vcp2@838z^mnwy(sk-fftt&mli%dg&*=v^n^^&_^u0r"
+SECRET_KEY = env("SECRET_KEY")
+SCIWHEEL_API_KEY = env("SCIWHEEL_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
