@@ -49,18 +49,6 @@ class Command(management.base.BaseCommand):
             abstract,
             review,
             discussion,
-            # editor_names,
-            # publisher,
-            # subtitle,
-            # review,
-            # journal,
-            # volume,
-            # number,
-            # startpage,
-            # endpage,
-            # series,
-            # edition,
-            # sourcetype,
         ) = row[:12]
         if status != "Pending" or Resource.objects.filter(url=url).exists():
             logger.info("Skipping entry %r", title)

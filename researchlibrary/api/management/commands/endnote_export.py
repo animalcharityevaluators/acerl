@@ -27,7 +27,7 @@ class Command(management.base.BaseCommand):
     def format_resource(self, resource):
         return prune(
             {
-                "ref-type": {"@name": resource.resource_type},
+                "ref-type": {"@name": resource.get_resource_type_display()},
                 "contributors": {
                     "authors": {
                         "author": [author.name for author in resource.authors.all()]
@@ -47,7 +47,11 @@ class Command(management.base.BaseCommand):
                 "volume": resource.volume,
                 "number": resource.number,
                 "edition": resource.edition,
+                "publisher": resource.publisher,
+                "abstract": resource.abstract,
+                "edition": resource.edition,
                 "dates": {"pub-dates": {"date": resource.published}},
+                "access-date": resource.accessed.isoformat() if resource.accessed else None,
                 "urls": {
                     "web-urls": {"url": resource.url},
                     "pdf-urls": {"url": resource.fulltext_url},
