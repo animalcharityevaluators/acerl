@@ -133,9 +133,10 @@ class ResourceAdmin(admin.ModelAdmin):
     list_display = [
         "augmented_title",
         "concatenated_authors",
+        "resource_type",
+        "remote_id",
         "published",
         "created",
-        "resource_type",
     ]
     search_fields = [
         "title",
@@ -171,7 +172,7 @@ class ResourceAdmin(admin.ModelAdmin):
         ),
         (
             "Auxilliary Fields",
-            {"classes": ("collapse",), "fields": ("keywords", "abstract", "review")},
+            {"classes": ("collapse",), "fields": ("keywords", "abstract", "review", "remote_id")},
         ),
         (
             "Optional Fields",
