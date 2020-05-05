@@ -33,7 +33,7 @@ WORKING_PAPER = "WORKING_PAPER"
 
 RESOURCE_TYPE_CHOICES = (
     (BLOG_ARTICLE, "Blog post"),
-    (BOOK, "Nonfiction book"),
+    (BOOK, "Book"),
     (BROADCAST, "Broadcast"),
     (CATALOG, "Database or catalog"),
     (CHAPTER, "Book chapter"),

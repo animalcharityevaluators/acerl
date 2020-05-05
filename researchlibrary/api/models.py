@@ -5,6 +5,7 @@ from datetime import date
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
 from mptt.fields import TreeManyToManyField
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -93,7 +94,10 @@ class Resource(models.Model):
     authors = models.ManyToManyField(Person, related_name="resources_authored")
     title = models.CharField(max_length=300)
     published = ApproximateDateField(
-        "publication date", default="1000-01-01", help_text="Formats YYYY-MM-DD, YYYY-MM, and YYYY."
+        "publication date",
+        null=True,
+        blank=True,
+        help_text="Formats YYYY-MM-DD, YYYY-MM, and YYYY.",
     )
     resource_type = models.CharField(max_length=30, choices=RESOURCE_TYPE_CHOICES, blank=True)
 
@@ -128,6 +132,13 @@ class Resource(models.Model):
     remote_id = models.CharField(max_length=50, db_index=True, blank=True, default="")
     misc = JSONField(default=dict, blank=True)
 
+    @property
+    def extended_title(self):
+        if slugify(self.subtitle) in slugify(self.title):
+            # The subtitle is (rather erroneously) contained in the title
+            return self.title
+        return f"{self.title}: {self.subtitle}"
+
     def clean(self):
         if self.published and self.published > date.today().isoformat():
             raise ValidationError("The entered publication date is invalid.")
@@ -135,7 +146,7 @@ class Resource(models.Model):
             raise ValidationError("The entered page numbers are invalid.")
 
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.published})"
 
     def pages(self):
         if self.startpage and self.endpage:
