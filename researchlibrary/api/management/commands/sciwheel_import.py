@@ -5,17 +5,24 @@ from datetime import datetime
 from itertools import count
 
 import requests
-from dateutil.parser import parse as parse_date
+from django.conf import settings
 from django.core import management
-from oauth2client.service_account import ServiceAccountCredentials
+from django.db.models import Q
+from django.utils.text import slugify
+from django.forms.models import model_to_dict
 
 from ... import models_choices
 from ...fields import ApproximateDate
-from ...models import Category, Keyword, Person, Resource
+from ...models import Category, Person, Resource
 
 logger = logging.getLogger(__name__)
 session = requests.Session()
-session.headers["Authorization"] = "Bearer E3B47052BE53B29B9A397A10CFA12F4E"
+session.headers["Authorization"] = "Bearer " + settings.SCIWHEEL_API_KEY
+
+
+CATEGORIES_FROM_TAGS = True
+CATEGORIES_FROM_PROJECTS = True
+ROOT_PROJECT = "421109"  # Animal Charity Evaluators
 
 
 @dataclass
@@ -90,7 +97,7 @@ class Reference:
         title, subtitle = self.title, ""
         if separators.search(self.title):
             title, subtitle = separators.split(self.title, 1)
-        return title, subtitle
+        return title.strip(), subtitle.strip()
 
     def get_title(self):
         title, _ = self._get_title_and_subtitle()
@@ -101,12 +108,13 @@ class Reference:
         return subtitle
 
     def get_published(self):
-        segments = self.publicationDate.split(" ")
-        year, month, day = segments + [None, None, None][len(segments) :]
-        year = int(year) if year else None
-        month = self.MONTHS.index(month) + 1 if month else None
-        day = int(day) if day else None
-        return ApproximateDate(year, month, day)
+        if self.publicationDate:
+            segments = self.publicationDate.split(" ")
+            year, month, day = segments + [None, None, None][len(segments) :]
+            year = int(year) if year else None
+            month = self.MONTHS.index(month) + 1 if month else None
+            day = int(day) if day else None
+            return ApproximateDate(year, month, day)
 
     def get_resource_type(self):
         return self.TYPES[self.type]
@@ -115,16 +123,16 @@ class Reference:
         return datetime.fromtimestamp(self.f1000AddedDate / 1000)
 
     def get_url(self):
-        return self.fullTextLink or ""
+        return (self.fullTextLink or "").strip()
 
     def get_fulltext_url(self):
-        return self.pdfUrl or ""
+        return (self.pdfUrl or "").strip()
 
     def get_publisher(self):
-        return self.journalName or ""
+        return (self.journalName or "").strip()
 
     def get_abstract(self):
-        return self.abstractText or ""
+        return (self.abstractText or "").strip()
 
     def get_volume(self):
         if self.volume:
@@ -134,13 +142,33 @@ class Reference:
         if self.issue and self.issue.isnumeric():
             return int(self.issue)
 
-    def get_startpage(self):
+    def _get_start_and_end_page(self):
+        start = end = None
         if self.pagination:
-            return self.pagination.split("-")[0]
+            if "-" in self.pagination:
+                start, end = self.pagination.split("-", 1)
+            else:
+                start = self.pagination
+        if start and start.isnumeric():
+            start = int(start)
+        else:
+            start = None
+        if end and end.isnumeric():
+            end = int(end)
+        else:
+            end = None
+        return start, end
+
+    def get_startpage(self):
+        start, _ = self._get_start_and_end_page()
+        return start
 
     def get_endpage(self):
-        if self.pagination and "-" in self.pagination:
-            return self.pagination.split("-")[1]
+        _, end = self._get_start_and_end_page()
+        return end
+
+    def get_tags(self):
+        return self.f1000Tags
 
     def get_remote_id(self):
         return self.id
@@ -158,7 +186,6 @@ class Reference:
             "f1000AddedBy": self.f1000AddedBy,
             "f1000AddedDate": self.f1000AddedDate,
             "f1000RecommendationsCount": self.f1000RecommendationsCount,
-            "f1000Tags": self.f1000Tags,
             "pubmedCitationsCount": self.pubmedCitationsCount,
         }
 
@@ -194,11 +221,14 @@ class Command(management.base.BaseCommand):
     def sync_categories(self):
         logger.info("Syncing categories")
         projects = self.depaginate("https://sciwheel.com/extapi/work/projects")
-        for project in flatten(projects):
+        [root_project] = [project for project in projects if project["id"] == ROOT_PROJECT]
+        for project in flatten(root_project["children"]):
+            # Well-known category
             category = Category.objects.filter(remote_id=project.id).first()
             if category:
                 category.name = project.name
                 continue
+            # Existing but unmatched category
             category = Category.objects.filter(name=project.name).first()
             if category:
                 category.remote_id = project.id
@@ -207,54 +237,75 @@ class Command(management.base.BaseCommand):
             Category.objects.create(remote_id=project.id, name=project.name)
 
     def update_resource(self, reference, category):
-        resource = Resource.objects.filter(remote_id=reference.id).first()
-        if not resource:
+        # Perfect match
+        matching_resources = Resource.objects.filter(remote_id=reference.id)
+        # Should be fairly reliable
+        if not matching_resources:
+            matching_resources = Resource.objects.filter(
+                Q(url=reference.fullTextLink) | Q(fulltext_url=reference.fullTextLink)
+            )
+        # Unreliable matching
+        if not matching_resources:
             matching_resources = [
                 resource
                 for resource in Resource.objects.prefetch_related("authors").filter(remote_id="")
-                if resource.title.lower() in reference.title.lower()
+                if slugify(reference.title).startswith(slugify(resource.title))
+                or slugify(resource.extended_title).startswith(slugify(reference.title))
             ]
-            if len(matching_resources) > 1 and reference.authorsText:
-                matching_resources = [
-                    resource
-                    for resource in matching_resources
-                    if all(
-                        author.last_name.lower() in reference.authorsText.lower()
-                        for author in resource.authors.all()
-                    )
-                ]
-            if len(matching_resources) > 1 and reference.publicationDate:
-                matching_resources = [
-                    resource
-                    for resource in matching_resources
-                    if resource.published.year == reference.get_published().year
-                ]
-            if len(matching_resources) == 1:
-                [resource] = matching_resources
-                logger.info("Found matching resource %s", resource)
-            else:
-                logger.warning("%s matching resources found", len(matching_resources))
-                assert len(matching_resources) == 0
-        if not resource:
-            logger.info("Creating new resource")
+        # Filter my year only if there are too many
+        if len(matching_resources) > 1 and reference.publicationDate:
+            matching_resources = [
+                resource
+                for resource in matching_resources
+                if resource.published.year == reference.get_published().year
+            ]
+        # Filter my author only if there are too many
+        if len(matching_resources) > 1 and reference.authorsText:
+            matching_resources = [
+                resource
+                for resource in matching_resources
+                if all(
+                    author.last_name.lower() in reference.authorsText.lower()
+                    for author in resource.authors.all()
+                )
+            ]
+        if len(matching_resources) == 1:
+            [resource] = matching_resources
+            logger.info("Found matching resource %s", resource)
+        elif len(matching_resources) < 1:
+            logger.info("Creating new resource for %s", reference)
             resource = Resource()
-        resource.title = reference.get_title()
-        resource.subtitle = reference.get_subtitle()
-        resource.published = reference.get_published()
-        resource.resource_type = reference.get_resource_type()
-        resource.accessed = reference.get_accessed()
-        resource.url = reference.get_url()
-        resource.fulltext_url = reference.get_fulltext_url()
-        resource.publisher = reference.get_publisher()
-        resource.abstract = reference.get_abstract()
-        resource.volume = reference.get_volume()
-        resource.number = reference.get_number()
-        resource.startpage = reference.get_startpage()
-        resource.endpage = reference.get_endpage()
-        resource.remote_id = reference.get_remote_id()
-        resource.misc = reference.get_misc()
+        else:  # Multiple matching resources
+            logger.error(
+                "%s matching resources found: %s",
+                len(matching_resources),
+                [model_to_dict(resource) for resource in matching_resources],
+            )
+            return
+        resource.title = reference.get_title() or resource.title
+        resource.subtitle = reference.get_subtitle() or resource.subtitle
+        resource.published = reference.get_published() or resource.published
+        resource.resource_type = reference.get_resource_type() or resource.resource_type
+        resource.accessed = reference.get_accessed() or resource.accessed
+        resource.url = reference.get_url() or resource.url
+        resource.fulltext_url = reference.get_fulltext_url() or resource.fulltext_url
+        resource.publisher = reference.get_publisher() or resource.publisher
+        resource.abstract = reference.get_abstract() or resource.abstract
+        resource.volume = reference.get_volume() or resource.volume
+        resource.number = reference.get_number() or resource.number
+        resource.startpage = reference.get_startpage() or resource.startpage
+        resource.endpage = reference.get_endpage() or resource.endpage
+        resource.remote_id = reference.get_remote_id() or resource.remote_id
+        resource.misc = reference.get_misc() or resource.misc
         resource.save()
-        resource.categories.add(category)
+        if CATEGORIES_FROM_PROJECTS and category.name != ROOT_PROJECT:
+            resource.categories.add(category)
+        if CATEGORIES_FROM_TAGS:
+            for tag in reference.get_tags():
+                categories = Category.objects.filter(name__startswith=tag)
+                if not categories:
+                    categories = [Category.objects.create(name=tag)]
+                resource.categories.add(*categories)
         if not resource.id or not resource.authors.all():
             authors = []
             author_names = reference.get_author_names()
