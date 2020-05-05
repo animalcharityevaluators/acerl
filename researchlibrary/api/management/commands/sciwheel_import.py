@@ -5,11 +5,13 @@ from datetime import datetime
 from itertools import count
 
 import requests
+from django.apps import apps as django_apps
 from django.conf import settings
 from django.core import management
 from django.db.models import Q
-from django.utils.text import slugify
 from django.forms.models import model_to_dict
+from django.utils.text import slugify
+from django.core import management
 
 from ... import models_choices
 from ...fields import ApproximateDate
@@ -135,7 +137,7 @@ class Reference:
         return (self.abstractText or "").strip()
 
     def get_volume(self):
-        if self.volume:
+        if self.volume and self.volume.isnumeric():
             return int(self.volume)
 
     def get_number(self):
@@ -222,16 +224,13 @@ class Command(management.base.BaseCommand):
         logger.info("Syncing categories")
         projects = self.depaginate("https://sciwheel.com/extapi/work/projects")
         [root_project] = [project for project in projects if project["id"] == ROOT_PROJECT]
-        for project in flatten(root_project["children"]):
-            # Well-known category
-            category = Category.objects.filter(remote_id=project.id).first()
-            if category:
-                category.name = project.name
+        for project in flatten([root_project]):
+            logger.info("Adding or updating project/category %s", project)
+            # Well-known category (update returns the number of updated rows)
+            if Category.objects.filter(remote_id=project.id).update(name=project.name):
                 continue
             # Existing but unmatched category
-            category = Category.objects.filter(name=project.name).first()
-            if category:
-                category.remote_id = project.id
+            if Category.objects.filter(name=project.name).update(remote_id=project.id):
                 continue
             # New category
             Category.objects.create(remote_id=project.id, name=project.name)
@@ -248,7 +247,7 @@ class Command(management.base.BaseCommand):
         if not matching_resources:
             matching_resources = [
                 resource
-                for resource in Resource.objects.prefetch_related("authors").filter(remote_id="")
+                for resource in Resource.objects.filter(remote_id="")
                 if slugify(reference.title).startswith(slugify(resource.title))
                 or slugify(resource.extended_title).startswith(slugify(reference.title))
             ]
@@ -271,11 +270,13 @@ class Command(management.base.BaseCommand):
             ]
         if len(matching_resources) == 1:
             [resource] = matching_resources
-            logger.info("Found matching resource %s", resource)
+            if not resource.remote_id:
+                logger.info("Found new matching resource %s", resource)
         elif len(matching_resources) < 1:
             logger.info("Creating new resource for %s", reference)
             resource = Resource()
         else:  # Multiple matching resources
+            logger.error("Reference: %s", reference)
             logger.error(
                 "%s matching resources found: %s",
                 len(matching_resources),
@@ -298,7 +299,7 @@ class Command(management.base.BaseCommand):
         resource.remote_id = reference.get_remote_id() or resource.remote_id
         resource.misc = reference.get_misc() or resource.misc
         resource.save()
-        if CATEGORIES_FROM_PROJECTS and category.name != ROOT_PROJECT:
+        if CATEGORIES_FROM_PROJECTS and category.remote_id != ROOT_PROJECT:
             resource.categories.add(category)
         if CATEGORIES_FROM_TAGS:
             for tag in reference.get_tags():
@@ -329,6 +330,7 @@ class Command(management.base.BaseCommand):
     def sync_resources(self):
         logger.info("Syncing resources")
         for category in Category.objects.exclude(remote_id=""):
+            logger.info("Retrieving category %s", category.name)
             references = self.depaginate(
                 f"https://sciwheel.com/extapi/work/references"
                 f"?projectId={category.remote_id}&sort=addedDate:desc"

@@ -33,14 +33,12 @@ class Person(models.Model):
 
     @property
     def initials(self):
-        print("Person name:", self.name)
         names = self.name.split(" ")
         first_names = names[:-1]
         return ".".join([name[0] for name in first_names]) + "."
 
     @property
     def last_name(self):
-        print("Person name:", self.name)
         names = self.name.split(" ")
         return names[-1]
 
