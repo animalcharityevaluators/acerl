@@ -143,6 +143,7 @@ class ResourceAdmin(admin.ModelAdmin):
         "authors__name",
         "editors__name",
         "url",
+        "fulltext_url",
         "publisher",
         "subtitle",
         "journal",
@@ -152,6 +153,7 @@ class ResourceAdmin(admin.ModelAdmin):
     ]
     list_filter = ["resource_type", "categories", "sourcetype"]
     filter_horizontal = ["authors", "editors", "keywords", "categories"]
+    readonly_fields = ["misc"]
     fieldsets = (
         (
             "Main Fields",
@@ -189,6 +191,7 @@ class ResourceAdmin(admin.ModelAdmin):
                     "edition",
                     "sourcetype",
                     "fulltext",
+                    "misc",
                 ),
             },
         ),
