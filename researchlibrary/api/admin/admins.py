@@ -55,7 +55,7 @@ class EditorUsageCountListFilter(UsageCountListFilter):
 
 @admin.register(Category)
 class CategoryAdmin(DraggableMPTTAdmin):
-    list_display = ("tree_actions", "indented_title", "usage_count")
+    list_display = ("tree_actions", "indented_title", "remote_id", "usage_count")
     list_display_links = ("indented_title",)
 
     def get_queryset(self, request):
