@@ -340,5 +340,9 @@ class Command(management.base.BaseCommand):
                 self.update_resource(reference, category)
 
     def handle(self, *args, **options):
+        # It’s more efficient to deactivate signals and run an update once in the end
+        django_apps.app_configs["haystack"].signal_processor.teardown()
         self.sync_categories()
         self.sync_resources()
+        management.call_command("update_index")
+
