@@ -56,7 +56,7 @@ class Category(MPTTModel):
     The category of a resource, using mptt for tree management
     """
 
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=300, db_index=True)
     parent = TreeForeignKey("self", null=True, blank=True, related_name="children", db_index=True)
     remote_id = models.CharField(max_length=50, db_index=True, blank=True, default="")
 
