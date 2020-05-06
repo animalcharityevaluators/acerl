@@ -130,7 +130,7 @@ class Reference:
     def get_fulltext_url(self):
         return (self.pdfUrl or "").strip()
 
-    def get_publisher(self):
+    def get_journal(self):
         return (self.journalName or "").strip()
 
     def get_abstract(self):
@@ -290,7 +290,7 @@ class Command(management.base.BaseCommand):
         resource.accessed = reference.get_accessed() or resource.accessed
         resource.url = reference.get_url() or resource.url
         resource.fulltext_url = reference.get_fulltext_url() or resource.fulltext_url
-        resource.publisher = reference.get_publisher() or resource.publisher
+        resource.journal = reference.get_journal() or resource.journal
         resource.abstract = reference.get_abstract() or resource.abstract
         resource.volume = reference.get_volume() or resource.volume
         resource.number = reference.get_number() or resource.number
@@ -345,4 +345,3 @@ class Command(management.base.BaseCommand):
         self.sync_categories()
         self.sync_resources()
         management.call_command("update_index")
-
