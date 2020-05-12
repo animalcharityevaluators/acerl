@@ -27,9 +27,6 @@ class NonNullSerializer(serializers.HyperlinkedModelSerializer):
                 continue
             if attribute is not None:
                 represenation = field.to_representation(attribute)
-                if represenation in (None, "", []):
-                    # Do not seralize empty objects
-                    continue
                 ret[field.field_name] = represenation
         return ret
 
