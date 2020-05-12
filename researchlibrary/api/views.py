@@ -93,6 +93,8 @@ class SearchViewSet(viewsets.GenericViewSet):
             self._format_categories_list(category, facet_counts["categories"])
             for category in Category.objects.filter(level=0)
         ]
+        # Filter empty top-level categories
+        categories_tree = [category for category in categories_tree if category["resource_count"]]
         return {
             "categories_list": categories_tree,
             "resource_type_list": filter(bool, facet_counts["resource_type"].keys()),
