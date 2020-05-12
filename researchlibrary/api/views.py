@@ -109,7 +109,9 @@ class SearchViewSet(viewsets.GenericViewSet):
                 "resource_count": facet_counts.get(category.name, 0),
             }
         children = [
-            self._format_categories_list(child, facet_counts) for child in category.get_children()
+            self._format_categories_list(child, facet_counts)
+            for child in category.get_children()
+            if child["resource_count"]
         ]
         resource_count = sum(child["resource_count"] for child in children)
         return {"name": category.name, "children": children, "resource_count": resource_count}
