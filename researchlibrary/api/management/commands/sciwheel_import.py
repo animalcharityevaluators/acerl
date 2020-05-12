@@ -11,7 +11,6 @@ from django.core import management
 from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.utils.text import slugify
-from django.core import management
 
 from ... import models_choices
 from ...fields import ApproximateDate
