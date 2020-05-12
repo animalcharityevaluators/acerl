@@ -105,7 +105,7 @@ class Resource(models.Model):
         "date accessed", help_text="ISO 8601 format, e.g., 1806-05-20.", null=True, blank=True
     )
     created = models.DateTimeField(auto_now_add=True)
-    url = models.URLField(max_length=2000, blank=True, verbose_name="URL")
+    url = models.URLField(max_length=2000, blank=True, default="", verbose_name="URL")
     fulltext_url = models.URLField(max_length=2000, blank=True, verbose_name="fulltext URL")
     categories = TreeManyToManyField(Category, related_name="resources", blank=True)
     keywords = models.ManyToManyField(Keyword, related_name="resources", blank=True)
