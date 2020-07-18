@@ -41,6 +41,13 @@ VALID_SORT_FIELDS = [
 ]
 
 
+class LengthlessSearchQuerySet(SearchQuerySet):
+    def __len__(self):
+        # Prevent this: https://stackoverflow.com/a/41475344/678861
+        # Otherwise the query is run twice
+        return 2048
+
+
 class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     The view of the /list endpoint of the API. For the API documentation
@@ -57,7 +64,7 @@ class SearchViewSet(viewsets.GenericViewSet):
     call the endpoint in a browser.
     """
 
-    queryset = SearchQuerySet()
+    queryset = LengthlessSearchQuerySet()
 
     def list(self, request, *args, **kwargs):
         """
