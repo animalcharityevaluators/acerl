@@ -4,7 +4,9 @@ The Acerl API is self-documenting. Call the API base URL in a
 web browser for an overview of the available endpoints.
 """
 import logging
+from collections import Counter
 from datetime import MAXYEAR
+from itertools import chain
 
 from haystack.inputs import Raw
 from haystack.query import SearchQuerySet
@@ -15,6 +17,28 @@ from .models import Keyword, Category, Person, Resource
 from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
 
 logger = logging.getLogger("debugging")
+
+VALID_SORT_FIELDS = [
+    "author",
+    "authors",
+    "categories",
+    "edition",
+    "editors",
+    "fulltext_url",
+    "journal",
+    "keywords",
+    "number",
+    "pages",
+    "published",
+    "publisher",
+    "resource_type",
+    "series",
+    "subtitle",
+    "title",
+    "url",
+    "volume",
+    "year_published",
+]
 
 
 class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -54,28 +78,41 @@ class SearchViewSet(viewsets.GenericViewSet):
 
     def _filtered_queryset(self, request):
         query = request.GET.get("q") or ":"
-        keyword_filters = request.GET.getlist("keyword")
         resource_type_filters = request.GET.getlist("type")
         min_year_filter = int(request.GET.get("minyear", 1000))
         max_year_filter = int(request.GET.get("maxyear", MAXYEAR))
-        category_filters = request.GET.getlist("category")
+        category_filters = set(request.GET.getlist("category"))
+        keyword_filters = set(request.GET.getlist("keyword"))
         sorting = request.GET.get("sort", "")
         queryset = (
             self.queryset.models(Resource)
             .filter(content=Raw(query))
             .filter(published__year__range=[min_year_filter, max_year_filter])
-            .highlight()
-            .facet("categories")
-            .facet("keywords")
         )
-        if keyword_filters:
-            queryset = queryset.filter(keywords__in=keyword_filters)
         if resource_type_filters:
             queryset = queryset.filter(resource_type__in=resource_type_filters)
-        if category_filters:
-            queryset = queryset.filter(categories__in=category_filters)
-        if queryset and sorting.strip("-") in queryset[0]._additional_fields:
+        if sorting.strip("-") in VALID_SORT_FIELDS:
             queryset = queryset.order_by(sorting)
+        # Evaluate the queryset
+        queryset = list(queryset)
+        # These filters don’t work correctly because they return the resources all of whose
+        # categories are in the filter categories, i.e. all resources whose categories are a subset
+        # of the filter categories, e.g., if a resources has categories foo and bar, and I filter
+        # for bar, it won’t be found. The filter we’d need is a filter that returns all that have a
+        # nonempty intersection. That’s not supported, so we need to filter and facet manually.
+        #
+        # if keyword_filters:
+        #     queryset = queryset.filter(keywords__in=keyword_filters)
+        # if category_filters:
+        #     queryset = queryset.filter(categories__in=category_filters)
+        if category_filters:
+            queryset = [
+                resource for resource in queryset if set(resource.categories) & category_filters
+            ]
+        if keyword_filters:
+            queryset = [
+                resource for resource in queryset if set(resource.keywords) & keyword_filters
+            ]
         return queryset
 
     @property
@@ -84,34 +121,32 @@ class SearchViewSet(viewsets.GenericViewSet):
         return {name: FieldFacet(name, allow_overlap=True, maptype=Count) for name in facet_names}
 
     def _get_facets(self, queryset):
-        whoosh = queryset.query.backend
-        searcher = whoosh.index.searcher()
-        query = whoosh.parser.parse(queryset.query.build_query())
-        results = searcher.search(query, groupedby=self.facet_fields)
-        facet_counts = {name: results.groups(name) for name in results.facet_names()}
+        category_counts = Counter(chain.from_iterable(resource.categories for resource in queryset))
+        resource_type_counts = Counter(resource.resource_type for resource in queryset)
+        year_published_counts = Counter(resource.year_published for resource in queryset)
         categories_tree = [
-            self._format_categories_list(category, facet_counts["categories"])
+            self._format_categories_list(category, category_counts)
             for category in Category.objects.filter(level=0)
         ]
         # Filter empty top-level categories
         categories_tree = [category for category in categories_tree if category["resource_count"]]
         return {
             "categories_list": categories_tree,
-            "resource_type_list": filter(bool, facet_counts["resource_type"].keys()),
-            "published_list": filter(bool, facet_counts["year_published"].keys()),
+            "resource_type_list": filter(bool, resource_type_counts.keys()),
+            "published_list": filter(bool, year_published_counts.keys()),
             # Keywords are currently not displayed in the frontend anyway
-            "keywords_list": [],  # filter(bool, facet_counts['keywords'].keys()),
+            "keywords_list": [],  # filter(bool, keyword_counts.keys()),
         }
 
-    def _format_categories_list(self, category, facet_counts):
+    def _format_categories_list(self, category, counts):
         if category.is_leaf_node():
             return {
                 "name": category.name,
                 "children": [],
-                "resource_count": facet_counts.get(category.name, 0),
+                "resource_count": counts.get(category.name, 0),
             }
         children = [
-            self._format_categories_list(child, facet_counts) for child in category.get_children()
+            self._format_categories_list(child, counts) for child in category.get_children()
         ]
         # Filter empty categories
         children = [child for child in children if child["resource_count"]]

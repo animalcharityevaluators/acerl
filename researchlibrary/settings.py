@@ -62,7 +62,7 @@ HAYSTACK_CONNECTIONS = {
 
 HAYSTACK_SIGNAL_PROCESSOR = "researchlibrary.api.signal_processors.SignalProcessor"
 
-HAYSTACK_ITERATOR_LOAD_PER_QUERY = 100
+HAYSTACK_ITERATOR_LOAD_PER_QUERY = 10000
 
 REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "researchlibrary.api.pagination.ResourcePagination"}
 
