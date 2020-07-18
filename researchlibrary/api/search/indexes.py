@@ -9,7 +9,7 @@ from haystack import indexes
 from whoosh.analysis import IDTokenizer
 
 from ..fields import ApproximateDateField
-from ..models import Keyword, Person, Resource
+from ..models import Person, Resource
 from .fields import AnalyzerCharField
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,6 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
     categories = indexes.MultiValueField(indexed=False)
     authors = indexes.MultiValueField(indexed=False)
     editors = indexes.MultiValueField(indexed=False)
-    keywords = indexes.MultiValueField(indexed=False)
     title = AnalyzerCharField(model_attr="title", null=True, indexed=False)
     subtitle = AnalyzerCharField(model_attr="subtitle", null=True, indexed=False)
     title_auto = indexes.EdgeNgramField(model_attr="title")
@@ -101,18 +100,6 @@ class PersonIndex(indexes.SearchIndex, indexes.Indexable):
 
     def get_model(self):
         return Person
-
-    def index_queryset(self, using=None):
-        return self.get_model().objects.all()
-
-
-class KeywordIndex(indexes.SearchIndex, indexes.Indexable):
-    text = indexes.CharField(document=True, use_template=False)
-    keyword = AnalyzerCharField(model_attr="name", analyzer=IDTokenizer())
-    keyword_auto = indexes.EdgeNgramField(model_attr="name")
-
-    def get_model(self):
-        return Keyword
 
     def index_queryset(self, using=None):
         return self.get_model().objects.all()

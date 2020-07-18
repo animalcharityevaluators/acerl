@@ -13,10 +13,10 @@ from haystack.query import SearchQuerySet
 from rest_framework import viewsets
 from whoosh.sorting import FieldFacet, Count
 
-from .models import Keyword, Category, Person, Resource
+from .models import Category, Person, Resource
 from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
 
-logger = logging.getLogger("debugging")
+logger = logging.getLogger(__name__)
 
 VALID_SORT_FIELDS = [
     "author",
@@ -82,7 +82,6 @@ class SearchViewSet(viewsets.GenericViewSet):
         min_year_filter = int(request.GET.get("minyear", 1000))
         max_year_filter = int(request.GET.get("maxyear", MAXYEAR))
         category_filters = set(request.GET.getlist("category"))
-        keyword_filters = set(request.GET.getlist("keyword"))
         sorting = request.GET.get("sort", "")
         queryset = (
             self.queryset.models(Resource)
@@ -101,17 +100,11 @@ class SearchViewSet(viewsets.GenericViewSet):
         # for bar, it won’t be found. The filter we’d need is a filter that returns all that have a
         # nonempty intersection. That’s not supported, so we need to filter and facet manually.
         #
-        # if keyword_filters:
-        #     queryset = queryset.filter(keywords__in=keyword_filters)
         # if category_filters:
         #     queryset = queryset.filter(categories__in=category_filters)
         if category_filters:
             queryset = [
                 resource for resource in queryset if set(resource.categories) & category_filters
-            ]
-        if keyword_filters:
-            queryset = [
-                resource for resource in queryset if set(resource.keywords) & keyword_filters
             ]
         return queryset
 
@@ -135,7 +128,7 @@ class SearchViewSet(viewsets.GenericViewSet):
             "resource_type_list": filter(bool, resource_type_counts.keys()),
             "published_list": filter(bool, year_published_counts.keys()),
             # Keywords are currently not displayed in the frontend anyway
-            "keywords_list": [],  # filter(bool, keyword_counts.keys()),
+            "keywords_list": [],
         }
 
     def _format_categories_list(self, category, counts):
@@ -184,13 +177,7 @@ class SuggestViewSet(viewsets.GenericViewSet):
                 {"value": result.name, "field": "author"}
                 for result in SearchQuerySet().models(Person).autocomplete(name_auto=search_text)
             ]
-            sq4 = [
-                {"value": result.keyword, "field": "keyword"}
-                for result in SearchQuerySet()
-                .models(Keyword)
-                .autocomplete(keyword_auto=search_text)
-            ]
-            results = sq1 + sq2 + sq3 + sq4
+            results = sq1 + sq2 + sq3
         else:
             results = []
         page = self.paginate_queryset(results)
