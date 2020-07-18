@@ -11,6 +11,9 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "researchlibrary.production")
+if os.environ.get("DEBUG") == "True":
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "researchlibrary.development")
+else:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "researchlibrary.production")
 
 application = get_wsgi_application()
