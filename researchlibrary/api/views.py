@@ -5,7 +5,6 @@ web browser for an overview of the available endpoints.
 """
 import logging
 from collections import Counter
-from datetime import MAXYEAR
 from itertools import chain
 
 from haystack.inputs import Raw
@@ -87,7 +86,7 @@ class SearchViewSet(viewsets.GenericViewSet):
         query = request.GET.get("q") or ":"
         resource_type_filters = request.GET.getlist("type")
         min_year_filter = int(request.GET.get("minyear", 1000))
-        max_year_filter = int(request.GET.get("maxyear", MAXYEAR))
+        max_year_filter = int(request.GET.get("maxyear", 3000)) + 1  # Off by one issue
         category_filters = set(request.GET.getlist("category"))
         sorting = request.GET.get("sort", "")
         queryset = (
