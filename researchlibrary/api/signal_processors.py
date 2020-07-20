@@ -70,8 +70,10 @@ class SignalProcessor(BaseSignalProcessor):
             else:
                 index = unified_index.get_index(Resource)
                 objects = instance.resources.all()
-                for obj in objects:
-                    index.update_object(obj, using=using)
+                if len(objects) < 10:
+                    # We have timeout problems when too many resources need to be updated
+                    for obj in objects:
+                        index.update_object(obj, using=using)
 
     def handle_m2m(self, sender, instance, action, reverse, model, pk_set, **kwargs):
         logger.debug(
