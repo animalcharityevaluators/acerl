@@ -11,7 +11,6 @@ from rest_framework import routers
 from . import views
 
 router = routers.DefaultRouter()
-router.register(r"list", views.ResourceViewSet, basename="list")
 router.register(r"search", views.SearchViewSet, basename="search")
 router.register(r"suggest", views.SuggestViewSet, basename="suggest")
 

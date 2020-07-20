@@ -48,16 +48,6 @@ class LengthlessSearchQuerySet(SearchQuerySet):
         return 2048
 
 
-class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    The view of the /list endpoint of the API. For the API documentation
-    call the endpoint in a browser.
-    """
-
-    queryset = Resource.objects.all()
-    serializer_class = ResourceSerializer
-
-
 class SearchViewSet(viewsets.GenericViewSet):
     """
     The view of the /search endpoint of the API. For the API documentation
