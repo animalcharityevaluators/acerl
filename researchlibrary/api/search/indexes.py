@@ -10,6 +10,7 @@ from whoosh.analysis import IDTokenizer
 
 from ..fields import ApproximateDateField
 from ..models import Person, Resource
+from ..models_choices import TRUE
 from .fields import AnalyzerCharField
 
 logger = logging.getLogger(__name__)
@@ -59,13 +60,13 @@ class ResourceIndex(indexes.SearchIndex, indexes.Indexable):
         return Resource
 
     def index_queryset(self, using=None):
-        return self.get_model().objects.all()
+        return self.get_model().objects.filter(is_visible=TRUE)
 
     def prepare_published(self, obj):
         return str(obj.published)
 
     def prepare_categories(self, obj):
-        return list(obj.categories.all())
+        return list(obj.categories.filter(is_visible=TRUE))
 
     def prepare_authors(self, obj):
         return list(obj.authors.all())

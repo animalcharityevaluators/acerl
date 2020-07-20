@@ -77,3 +77,16 @@ SOURCETYPE_CHOICES = (
     (BLOG, "Blog"),
     (OTHER, "Other"),
 )
+
+
+# Quasi-boolean choices
+
+TRUE = "TRUE"
+FALSE = "FALSE"
+UNSET = "UNSET"
+
+BOOLEAN_CHOICES = (
+    (TRUE, "Yes"),
+    (FALSE, "No"),
+    (UNSET, "Unset"),
+)

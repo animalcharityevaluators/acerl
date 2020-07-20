@@ -13,6 +13,7 @@ from rest_framework import viewsets
 from whoosh.sorting import FieldFacet, Count
 
 from .models import Category, Person, Resource
+from .models_choices import TRUE
 from .serializers import ResourceSerializer, SearchSerializer, SuggestSerializer
 
 logger = logging.getLogger(__name__)
@@ -125,7 +126,7 @@ class SearchViewSet(viewsets.GenericViewSet):
         year_published_counts = Counter(resource.year_published for resource in queryset)
         categories_tree = [
             self._format_categories_list(category, category_counts)
-            for category in Category.objects.filter(level=0)
+            for category in Category.objects.filter(level=0, is_visible=TRUE)
         ]
         # Filter empty top-level categories
         categories_tree = [category for category in categories_tree if category["resource_count"]]

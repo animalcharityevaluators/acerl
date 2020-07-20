@@ -10,7 +10,7 @@ from mptt.fields import TreeManyToManyField
 from mptt.models import MPTTModel, TreeForeignKey
 
 from .fields import ApproximateDateField
-from .models_choices import RESOURCE_TYPE_CHOICES, SOURCETYPE_CHOICES
+from .models_choices import RESOURCE_TYPE_CHOICES, SOURCETYPE_CHOICES, BOOLEAN_CHOICES, UNSET
 
 
 class Person(models.Model):
@@ -59,6 +59,7 @@ class Category(MPTTModel):
     name = models.CharField(max_length=300, db_index=True)
     parent = TreeForeignKey("self", null=True, blank=True, related_name="children", db_index=True)
     remote_id = models.CharField(max_length=50, db_index=True, blank=True, default="")
+    is_visible = models.CharField(max_length=16, choices=BOOLEAN_CHOICES, default=UNSET)
 
     def __str__(self):
         return self.name
@@ -129,6 +130,7 @@ class Resource(models.Model):
     )
     remote_id = models.CharField(max_length=50, db_index=True, blank=True, default="")
     misc = JSONField(default=dict, blank=True)
+    is_visible = models.CharField(max_length=16, choices=BOOLEAN_CHOICES, default=UNSET)
 
     @property
     def extended_title(self):

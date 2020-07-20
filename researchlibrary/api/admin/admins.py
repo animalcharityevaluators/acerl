@@ -10,7 +10,25 @@ from django.utils.html import format_html
 from mptt.admin import DraggableMPTTAdmin
 
 from ..models import Category, Keyword, Person, Resource
+from ..models_choices import TRUE, FALSE, UNSET
 from .utils import Gist
+
+
+class VisibilityActionMixin:
+    def make_visible(self, request, queryset):
+        queryset.update(is_visible=TRUE)
+
+    make_visible.short_description = "Mark selected entries as visible"
+
+    def make_invisible(self, request, queryset):
+        queryset.update(is_visible=FALSE)
+
+    make_invisible.short_description = "Mark selected entries as invisible"
+
+    def reset_visibility(self, request, queryset):
+        queryset.update(is_visible=UNSET)
+
+    reset_visibility.short_description = "Reset visibility of selected entries"
 
 
 class UsageCountListFilter(admin.SimpleListFilter):
@@ -54,9 +72,11 @@ class EditorUsageCountListFilter(UsageCountListFilter):
 
 
 @admin.register(Category)
-class CategoryAdmin(DraggableMPTTAdmin):
-    list_display = ("tree_actions", "indented_title", "remote_id", "usage_count")
-    list_display_links = ("indented_title",)
+class CategoryAdmin(VisibilityActionMixin, DraggableMPTTAdmin):
+    list_display = ["tree_actions", "indented_title", "remote_id", "usage_count", "is_visible"]
+    list_display_links = ["indented_title"]
+    list_filter = ["is_visible"]
+    actions = ["make_visible", "make_invisible", "reset_visibility"]
 
     def get_queryset(self, request):
         return Category.objects.annotate(cat_count=Count("resources"))
@@ -126,7 +146,7 @@ class ResourceForm(ModelForm):
 
 
 @admin.register(Resource)
-class ResourceAdmin(admin.ModelAdmin):
+class ResourceAdmin(VisibilityActionMixin, admin.ModelAdmin):
     form = ResourceForm
     change_list_template = "api/change_list.html"
     change_form_template = "api/change_form.html"
@@ -137,6 +157,7 @@ class ResourceAdmin(admin.ModelAdmin):
         "remote_id",
         "published",
         "created",
+        "is_visible",
     ]
     search_fields = [
         "title",
@@ -151,7 +172,8 @@ class ResourceAdmin(admin.ModelAdmin):
         "edition",
         "sourcetype",
     ]
-    list_filter = ["resource_type", "categories", "sourcetype"]
+    list_filter = ["is_visible", "resource_type", "categories", "sourcetype"]
+    actions = ["make_visible", "make_invisible", "reset_visibility"]
     filter_horizontal = ["authors", "editors", "keywords", "categories"]
     readonly_fields = ["misc"]
     fieldsets = (
@@ -161,6 +183,7 @@ class ResourceAdmin(admin.ModelAdmin):
                 "fields": (
                     "title",
                     "subtitle",
+                    "is_visible",
                     "authors",
                     "editors",
                     "published",
