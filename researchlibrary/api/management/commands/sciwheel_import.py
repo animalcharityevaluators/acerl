@@ -343,4 +343,5 @@ class Command(management.base.BaseCommand):
         django_apps.app_configs["haystack"].signal_processor.teardown()
         self.sync_categories()
         self.sync_resources()
-        management.call_command("update_index")
+        # Rebuilding takes about 50 s atm., updating about 130 s
+        management.call_command("rebuild_index", interactive=False)
