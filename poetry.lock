@@ -428,14 +428,14 @@ testing = ["Django (<3.1)", "colorama", "docopt", "pytest (<6.0.0)"]
 
 [[package]]
 name = "jinja2"
-version = "2.8"
-description = "A small but fast and easy to use stand-alone template engine written in pure python."
+version = "2.11.3"
+description = "A very fast and expressive template engine."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.dependencies]
-MarkupSafe = "*"
+MarkupSafe = ">=0.23"
 
 [package.extras]
 i18n = ["Babel (>=0.8)"]
@@ -873,7 +873,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "2efaa63460d5bf6e169e642dad1365b7272da907c5afc6870e1e013b638a358c"
+content-hash = "48b9897852e0edc75764ec329b0a37ecc932ce3f7438970a3cea0464d00c41de"
 
 [metadata.files]
 alabaster = [
@@ -1024,8 +1024,8 @@ jedi = [
     {file = "jedi-0.18.0.tar.gz", hash = "sha256:92550a404bad8afed881a137ec9a461fed49eca661414be45059329614ed0707"},
 ]
 jinja2 = [
-    {file = "Jinja2-2.8-py2.py3-none-any.whl", hash = "sha256:1cc03ef32b64be19e0a5b54578dd790906a34943fe9102cfdae0d4495bd536b4"},
-    {file = "Jinja2-2.8.tar.gz", hash = "sha256:bc1ff2ff88dbfacefde4ddde471d1417d3b304e8df103a7a9437d47269201bf4"},
+    {file = "Jinja2-2.11.3-py2.py3-none-any.whl", hash = "sha256:03e47ad063331dd6a3f04a43eddca8a966a26ba0c5b7207a9a9e4e08f1b29419"},
+    {file = "Jinja2-2.11.3.tar.gz", hash = "sha256:a6d58433de0ae800347cab1fa3043cebbabe8baa9d29e668f1c768cb87a333c6"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.6.0.tar.gz", hash = "sha256:489000d368377571c6f982fba6497f2aa13c6d1facc40660963da62f5c379726"},
