@@ -22,3 +22,10 @@ docs/Makefile
 /whoosh_index/
 /.env
 /.vscode
+/.idea
+/acerl.*.sql
+/acerl.*.psql
+/acerl.code-workspace
+/*.speedscope
+/*.zip
+/xml-exports.*
