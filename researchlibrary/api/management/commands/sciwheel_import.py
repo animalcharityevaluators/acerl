@@ -23,7 +23,7 @@ session.headers["Authorization"] = "Bearer " + settings.SCIWHEEL_API_KEY
 
 CATEGORIES_FROM_TAGS = True
 CATEGORIES_FROM_PROJECTS = False
-ROOT_PROJECT = "421109"  # Animal Charity Evaluators
+ROOT_PROJECT = "528152"  # Research Library (public)
 
 
 @dataclass
