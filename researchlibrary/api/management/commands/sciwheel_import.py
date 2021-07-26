@@ -95,9 +95,9 @@ class Reference:
 
     def _get_title_and_subtitle(self):
         separators = re.compile(r" – |: ")
-        title, subtitle = self.title, ""
-        if separators.search(self.title):
-            title, subtitle = separators.split(self.title, 1)
+        title, subtitle = self.title or "", ""
+        if separators.search(title):
+            title, subtitle = separators.split(title, 1)
         return title.strip(), subtitle.strip()
 
     def get_title(self):
