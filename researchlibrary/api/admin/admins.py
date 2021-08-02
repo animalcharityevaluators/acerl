@@ -3,7 +3,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin import widgets
 from django.contrib.admin.utils import unquote
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Count
 from django.forms import ModelForm
 from django.utils.html import format_html

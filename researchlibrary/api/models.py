@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
@@ -57,7 +57,14 @@ class Category(MPTTModel):
     """
 
     name = models.CharField(max_length=300, db_index=True)
-    parent = TreeForeignKey("self", null=True, blank=True, related_name="children", db_index=True)
+    parent = TreeForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="children",
+        db_index=True,
+    )
     remote_id = models.CharField(max_length=50, db_index=True, blank=True, default="")
     is_visible = models.CharField(max_length=16, choices=BOOLEAN_CHOICES, default=UNSET)
 
