@@ -60,6 +60,7 @@ class SearchTests(TestCase):
         author.resources_authored.add(*resources)
         category.resources.add(*resources[:5])
         resources[5].categories.add(category)
+        call_command("rebuild_index", interactive=False)
 
     @classmethod
     def tearDownClass(cls):

@@ -174,7 +174,7 @@ class AdminTests(TestCase):
                 "url": "http://claviger.net/attribution-moloch.html",
             },
         )
-        self.assertEqual(response.status_code, 302, response)
+        self.assertEqual(response.status_code, 200, response)
         self.assertEqual(response.url, "/admin/api/resource/", response)
 
     @skip(reason="currently deactivated")
