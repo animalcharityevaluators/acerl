@@ -4,26 +4,26 @@ from itertools import chain
 from django.db.models import signals
 from haystack.signals import BaseSignalProcessor
 
-from .models import Category, Keyword, Person, Resource
+from .models import Category, Person, Resource
 
 logger = logging.getLogger(__name__)
 
 
 class SignalProcessor(BaseSignalProcessor):
     def setup(self):
-        for model in (Resource, Keyword, Person):  # All models with indices
+        for model in (Resource, Person):  # All models with indices
             signals.post_save.connect(self.handle_save, sender=model)
             signals.post_delete.connect(self.handle_delete, sender=model)
-        for model in (Resource, Category, Keyword, Person):  # All models
+        for model in (Resource, Category, Person):  # All models
             signals.post_save.connect(self.handle_related, sender=model)
             signals.post_delete.connect(self.handle_related, sender=model)
         signals.m2m_changed.connect(self.handle_m2m)
 
     def teardown(self):
-        for model in (Resource, Keyword, Person):
+        for model in (Resource, Person):
             signals.post_save.disconnect(self.handle_save, sender=model)
             signals.post_delete.disconnect(self.handle_delete, sender=model)
-        for model in (Resource, Category, Keyword, Person):
+        for model in (Resource, Category, Person):
             signals.post_save.disconnect(self.handle_related, sender=model)
             signals.post_delete.disconnect(self.handle_related, sender=model)
         signals.m2m_changed.disconnect(self.handle_m2m)
