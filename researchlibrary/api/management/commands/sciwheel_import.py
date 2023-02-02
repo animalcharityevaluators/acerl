@@ -152,10 +152,16 @@ class Reference:
                 start = self.pagination
         if start and start.isnumeric():
             start = int(start)
+            if start not in range(-2**31, 2**31-1):
+                # Postgres limit
+                start = None
         else:
             start = None
         if end and end.isnumeric():
             end = int(end)
+            if start not in range(-2**31, 2**31-1):
+                # Postgres limit
+                start = None
         else:
             end = None
         return start, end
